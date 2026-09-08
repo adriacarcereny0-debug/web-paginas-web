@@ -1,0 +1,115 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 14px;
+  }
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 88px;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-white text-slate-700 antialiased;
+    font-feature-settings: "cv11", "ss01";
+    text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display text-navy-900;
+    text-wrap: balance;
+  }
+  p { text-wrap: pretty; }
+  ::selection { @apply bg-brand-600 text-white; }
+  :focus-visible {
+    outline: 2px solid theme("colors.brand.600");
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  input, textarea, select { color-scheme: light; }
+}
+
+@layer components {
+  .container-x { @apply mx-auto w-full max-w-[1200px] px-5 sm:px-6 lg:px-8; }
+
+  .btn {
+    @apply inline-flex select-none items-center justify-center gap-2 rounded-full px-5 py-3 text-[15px] font-semibold
+           transition-all duration-200 disabled:pointer-events-none disabled:opacity-55;
+  }
+  .btn-primary {
+    @apply btn bg-brand-600 text-white shadow-[0_10px_30px_-12px_rgba(37,99,235,.75)]
+           hover:bg-brand-700 hover:shadow-lift active:translate-y-px;
+  }
+  .btn-secondary {
+    @apply btn border border-slate-200 bg-white text-navy-800 hover:border-brand-300 hover:bg-brand-50 active:translate-y-px;
+  }
+  .btn-ghost { @apply btn text-navy-700 hover:bg-slate-100; }
+  .btn-dark { @apply btn bg-navy-900 text-white hover:bg-navy-800; }
+  .btn-sm { @apply px-4 py-2 text-sm; }
+
+  .eyebrow {
+    @apply inline-flex items-center gap-2 rounded-full border border-brand-100 bg-brand-50 px-3 py-1
+           text-xs font-semibold uppercase tracking-[0.14em] text-brand-700;
+  }
+
+  .card { @apply rounded-2xl border border-slate-200/80 bg-white shadow-soft; }
+
+  .field {
+    @apply w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-[15px] text-navy-900
+           placeholder:text-slate-400 transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10;
+  }
+  .label { @apply mb-1.5 block text-sm font-medium text-navy-800; }
+  .help { @apply mt-1 text-xs text-slate-500; }
+  .error-text { @apply mt-1 text-xs font-medium text-red-600; }
+
+  .badge { @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold; }
+
+  .link-underline {
+    @apply relative after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px after:origin-right after:scale-x-0
+           after:bg-current after:transition-transform hover:after:origin-left hover:after:scale-x-100;
+  }
+
+  .prose-legal h2 { @apply mt-8 text-2xl font-bold text-navy-900 first:mt-0; }
+  .prose-legal h3 { @apply mt-6 text-lg font-semibold text-navy-900; }
+  .prose-legal p { @apply mt-4 leading-relaxed text-slate-600; }
+  .prose-legal ul { @apply mt-4 list-disc space-y-2 pl-5 text-slate-600; }
+  .prose-legal blockquote { @apply mt-6 rounded-xl border-l-4 border-brand-500 bg-brand-50/60 p-4 text-sm text-navy-700; }
+}
+
+@layer utilities {
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1); }
+  .reveal.is-visible { opacity: 1; transform: none; }
+  .grid-bg {
+    background-image: linear-gradient(rgba(15,23,42,.045) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(15,23,42,.045) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+  .mask-fade-b { mask-image: linear-gradient(to bottom, black 55%, transparent 100%); }
+  .text-gradient {
+    background: linear-gradient(100deg, #1d4ed8 0%, #3b82f6 45%, #0ea5e9 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { scrollbar-width: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal { opacity: 1 !important; transform: none !important; }
+}
+
+@media print {
+  header, footer, nav, .print\:hidden { display: none !important; }
+  main { padding-top: 0 !important; }
+  body { background: #fff !important; }
+  .container-x { max-width: none !important; padding: 0 !important; }
+  a[href]::after { content: ""; }
+}

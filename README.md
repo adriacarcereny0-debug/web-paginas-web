@@ -1,4 +1,4 @@
-# Nova Studio — Web de agencia + panel de administración
+# Webora Studio — Web de agencia + panel de administración
 
 Aplicación web completa para una agencia/estudio que crea páginas web para empresas,
 autónomos y negocios. No es una landing estática: incluye creador de presupuestos,
@@ -76,7 +76,7 @@ npm run start
 | --- | --- | --- |
 | `DATABASE_URL` | Sí | Cadena de conexión de PostgreSQL. Usa el endpoint *pooled* si tu proveedor lo ofrece. También se aceptan `POSTGRES_URL` y `POSTGRES_PRISMA_URL`. |
 | `AUTH_SECRET` | Recomendada | Firma la cookie de sesión del panel. Genérala con `openssl rand -base64 32`. Si no está definida, se deriva una clave estable a partir de `DATABASE_URL` para no bloquear el acceso, pero conviene definirla para poder rotarla por separado. |
-| `ADMIN_EMAIL` | No | Email del administrador. Si esa cuenta no existe todavía, se crea al arrancar; si ya existe, no se toca. Por defecto `admin@novastudio.es`. |
+| `ADMIN_EMAIL` | No | Email del administrador. Si esa cuenta no existe todavía, se crea al arrancar; si ya existe, no se toca. Por defecto `admin@webora.studio`. |
 | `ADMIN_PASSWORD` | No | Contraseña con la que se crea esa cuenta. Por defecto `admin1234` — **cámbiala**. |
 | `ADMIN_NAME` | No | Nombre mostrado en el panel. |
 | `ADMIN_PASSWORD_RESET` | No | Vía de emergencia. Con el valor `1`, al arrancar se restablece la contraseña de `ADMIN_EMAIL` usando `ADMIN_PASSWORD`. Elimina la variable en cuanto recuperes el acceso. |

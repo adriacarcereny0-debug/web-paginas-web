@@ -1,7 +1,7 @@
 import type { PoolClient } from "pg";
 import { hashPassword } from "./password";
 
-const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "admin@novastudio.es").toLowerCase();
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "admin@webora.studio").toLowerCase();
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin1234";
 const ADMIN_PASSWORD_RESET = /^(1|true|yes|si|sí)$/i.test(process.env.ADMIN_PASSWORD_RESET || "");
 const ADMIN_NAME = process.env.ADMIN_NAME || "Administrador";

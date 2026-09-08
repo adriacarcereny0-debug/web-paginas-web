@@ -71,11 +71,11 @@ export type LegalContent = { privacy: string; cookies: string; legal: string };
 
 export const DEFAULTS = {
   site: {
-    brandName: "Nova Studio",
-    brandInitials: "N",
+    brandName: "Webora Studio",
+    brandInitials: "W",
     logo: "",
     tagline: "Estudio de diseño y desarrollo web",
-    email: "hola@novastudio.es",
+    email: "adriacarcereny0@gmail.com",
     phone: "+34 623 41 27 96",
     whatsapp: "+34623412796",
     address: "Barcelona, España",
@@ -88,13 +88,13 @@ export const DEFAULTS = {
   } satisfies SiteInfo,
 
   seo: {
-    title: "Nova Studio | Diseño y desarrollo de páginas web profesionales",
+    title: "Webora Studio | Diseño y desarrollo de páginas web profesionales",
     description:
       "Creamos páginas web modernas, rápidas y orientadas a conversión para empresas, autónomos y negocios. Calcula tu presupuesto en 2 minutos.",
     keywords: "diseño web, páginas web para empresas, desarrollo web, tienda online, landing page",
     ogImage: "",
     favicon: "",
-    siteUrl: "https://www.novastudio.es",
+    siteUrl: "https://web-paginas-web.vercel.app",
     twitter: "",
     indexable: true,
   } satisfies Seo,

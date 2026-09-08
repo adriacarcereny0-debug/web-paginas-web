@@ -1,227 +1,182 @@
-import Database from "better-sqlite3";
-import fs from "node:fs";
-import path from "node:path";
+import { Pool, type PoolClient } from "pg";
+import { runMigrations } from "./schema";
 import { seedIfEmpty } from "./seed";
-
-const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), "data");
-const DB_PATH = process.env.DATABASE_PATH || path.join(DATA_DIR, "app.db");
 
 declare global {
   // eslint-disable-next-line no-var
-  var __db: Database.Database | undefined;
+  var __pool: Pool | undefined;
+  // eslint-disable-next-line no-var
+  var __initPromise: Promise<void> | undefined;
 }
 
-function init(): Database.Database {
-  fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
-  const db = new Database(DB_PATH);
-  db.pragma("journal_mode = WAL");
-  db.pragma("foreign_keys = ON");
-  migrate(db);
-  seedIfEmpty(db);
-  return db;
+function connectionString() {
+  const url =
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.POSTGRES_PRISMA_URL ||
+    process.env.DATABASE_POSTGRES_URL;
+  if (!url) {
+    throw new Error(
+      "Falta la variable de entorno DATABASE_URL con la cadena de conexión de PostgreSQL. " +
+        "Configúrala en tu proveedor (Vercel: Settings > Environment Variables) o en .env.local.",
+    );
+  }
+  return url;
 }
 
-function migrate(db: Database.Database) {
-  db.exec(`
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    email TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
-    name TEXT NOT NULL DEFAULT '',
-    role TEXT NOT NULL DEFAULT 'admin',
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS settings (
-    key TEXT PRIMARY KEY,
-    value TEXT NOT NULL,
-    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS services (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    slug TEXT NOT NULL DEFAULT '',
-    description TEXT NOT NULL DEFAULT '',
-    icon TEXT NOT NULL DEFAULT 'layout',
-    image TEXT NOT NULL DEFAULT '',
-    price_from REAL NOT NULL DEFAULT 0,
-    price_label TEXT NOT NULL DEFAULT '',
-    features TEXT NOT NULL DEFAULT '[]',
-    sort_order INTEGER NOT NULL DEFAULT 0,
-    visible INTEGER NOT NULL DEFAULT 1,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS faqs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    question TEXT NOT NULL,
-    answer TEXT NOT NULL DEFAULT '',
-    sort_order INTEGER NOT NULL DEFAULT 0,
-    visible INTEGER NOT NULL DEFAULT 1,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS projects (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    description TEXT NOT NULL DEFAULT '',
-    category TEXT NOT NULL DEFAULT '',
-    image TEXT NOT NULL DEFAULT '',
-    tags TEXT NOT NULL DEFAULT '[]',
-    url TEXT NOT NULL DEFAULT '',
-    is_demo INTEGER NOT NULL DEFAULT 1,
-    sort_order INTEGER NOT NULL DEFAULT 0,
-    visible INTEGER NOT NULL DEFAULT 1,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS testimonials (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    company TEXT NOT NULL DEFAULT '',
-    text TEXT NOT NULL DEFAULT '',
-    photo TEXT NOT NULL DEFAULT '',
-    rating INTEGER NOT NULL DEFAULT 5,
-    is_demo INTEGER NOT NULL DEFAULT 1,
-    sort_order INTEGER NOT NULL DEFAULT 0,
-    visible INTEGER NOT NULL DEFAULT 1,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS calc_groups (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    key TEXT NOT NULL UNIQUE,
-    title TEXT NOT NULL,
-    subtitle TEXT NOT NULL DEFAULT '',
-    type TEXT NOT NULL DEFAULT 'single',
-    required INTEGER NOT NULL DEFAULT 1,
-    sort_order INTEGER NOT NULL DEFAULT 0,
-    visible INTEGER NOT NULL DEFAULT 1
-  );
-
-  CREATE TABLE IF NOT EXISTS calc_options (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    group_id INTEGER NOT NULL REFERENCES calc_groups(id) ON DELETE CASCADE,
-    label TEXT NOT NULL,
-    description TEXT NOT NULL DEFAULT '',
-    icon TEXT NOT NULL DEFAULT '',
-    price REAL NOT NULL DEFAULT 0,
-    price_type TEXT NOT NULL DEFAULT 'fixed',
-    days INTEGER NOT NULL DEFAULT 0,
-    sort_order INTEGER NOT NULL DEFAULT 0,
-    visible INTEGER NOT NULL DEFAULT 1
-  );
-
-  CREATE TABLE IF NOT EXISTS leads (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    surname TEXT NOT NULL DEFAULT '',
-    company TEXT NOT NULL DEFAULT '',
-    email TEXT NOT NULL,
-    phone TEXT NOT NULL DEFAULT '',
-    city TEXT NOT NULL DEFAULT '',
-    business_type TEXT NOT NULL DEFAULT '',
-    source TEXT NOT NULL DEFAULT 'calculadora',
-    status TEXT NOT NULL DEFAULT 'nuevo',
-    created_at TEXT NOT NULL DEFAULT (datetime('now')),
-    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS lead_notes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    lead_id INTEGER NOT NULL REFERENCES leads(id) ON DELETE CASCADE,
-    body TEXT NOT NULL,
-    author TEXT NOT NULL DEFAULT 'admin',
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS quotes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    public_id TEXT NOT NULL UNIQUE,
-    lead_id INTEGER REFERENCES leads(id) ON DELETE SET NULL,
-    selections TEXT NOT NULL DEFAULT '{}',
-    summary TEXT NOT NULL DEFAULT '[]',
-    project_type TEXT NOT NULL DEFAULT '',
-    price_min REAL NOT NULL DEFAULT 0,
-    price_max REAL NOT NULL DEFAULT 0,
-    monthly REAL NOT NULL DEFAULT 0,
-    days_min INTEGER NOT NULL DEFAULT 0,
-    days_max INTEGER NOT NULL DEFAULT 0,
-    status TEXT NOT NULL DEFAULT 'borrador',
-    notes TEXT NOT NULL DEFAULT '',
-    created_at TEXT NOT NULL DEFAULT (datetime('now')),
-    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS messages (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    email TEXT NOT NULL,
-    phone TEXT NOT NULL DEFAULT '',
-    company TEXT NOT NULL DEFAULT '',
-    project_type TEXT NOT NULL DEFAULT '',
-    message TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'nuevo',
-    lead_id INTEGER REFERENCES leads(id) ON DELETE SET NULL,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS media (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    filename TEXT NOT NULL,
-    original_name TEXT NOT NULL DEFAULT '',
-    url TEXT NOT NULL,
-    mime TEXT NOT NULL DEFAULT '',
-    size INTEGER NOT NULL DEFAULT 0,
-    width INTEGER NOT NULL DEFAULT 0,
-    height INTEGER NOT NULL DEFAULT 0,
-    alt TEXT NOT NULL DEFAULT '',
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
-  );
-
-  CREATE INDEX IF NOT EXISTS idx_leads_status ON leads(status);
-  CREATE INDEX IF NOT EXISTS idx_leads_created ON leads(created_at);
-  CREATE INDEX IF NOT EXISTS idx_quotes_lead ON quotes(lead_id);
-  CREATE INDEX IF NOT EXISTS idx_messages_status ON messages(status);
-  CREATE INDEX IF NOT EXISTS idx_calc_options_group ON calc_options(group_id);
-  `);
+/** Neon, Supabase y similares exigen TLS; un PostgreSQL local normalmente no lo tiene activado. */
+function sslConfig(url: string) {
+  if (/sslmode=disable/.test(url)) return undefined;
+  if (/@(localhost|127\.0\.0\.1|\[::1\])[:/]/.test(url)) return undefined;
+  return { rejectUnauthorized: false };
 }
 
-export function getDb(): Database.Database {
-  if (!global.__db) global.__db = init();
-  return global.__db;
+function getPool(): Pool {
+  if (!global.__pool) {
+    const url = connectionString();
+    global.__pool = new Pool({
+      connectionString: url,
+      ssl: sslConfig(url),
+      max: Number(process.env.PG_POOL_MAX) || 5,
+      idleTimeoutMillis: 20_000,
+      connectionTimeoutMillis: 15_000,
+    });
+    global.__pool.on("error", (err) => {
+      console.error("[db] error inesperado en el pool:", err.message);
+    });
+  }
+  return global.__pool;
 }
 
-export const db = new Proxy({} as Database.Database, {
-  get(_t, prop) {
-    const real = getDb() as unknown as Record<string | symbol, unknown>;
-    const value = real[prop];
-    return typeof value === "function" ? (value as (...a: unknown[]) => unknown).bind(real) : value;
-  },
+/**
+ * Crea el esquema y el contenido inicial una sola vez por instancia.
+ * Un advisory lock evita que dos arranques simultáneos se pisen.
+ */
+export function ready(): Promise<void> {
+  if (!global.__initPromise) {
+    global.__initPromise = (async () => {
+      const client = await getPool().connect();
+      try {
+        await client.query("SELECT pg_advisory_lock(918273645)");
+        await runMigrations(client);
+        await seedIfEmpty(client);
+      } finally {
+        await client.query("SELECT pg_advisory_unlock(918273645)").catch(() => {});
+        client.release();
+      }
+    })().catch((err) => {
+      global.__initPromise = undefined;
+      throw err;
+    });
+  }
+  return global.__initPromise;
+}
+
+/**
+ * Convierte los marcadores `?` al formato `$n` de PostgreSQL,
+ * respetando los literales entre comillas simples.
+ */
+export function toPgPlaceholders(sql: string) {
+  let out = "";
+  let index = 0;
+  let inString = false;
+  for (let i = 0; i < sql.length; i += 1) {
+    const char = sql[i];
+    if (char === "'") {
+      inString = !inString;
+      out += char;
+    } else if (char === "?" && !inString) {
+      index += 1;
+      out += `$${index}`;
+    } else {
+      out += char;
+    }
+  }
+  return out;
+}
+
+export type Executor = {
+  query: <T>(sql: string, params?: unknown[]) => Promise<T[]>;
+  queryOne: <T>(sql: string, params?: unknown[]) => Promise<T | undefined>;
+  execute: (sql: string, params?: unknown[]) => Promise<number>;
+};
+
+function makeExecutor(run: (sql: string, params: unknown[]) => Promise<{ rows: unknown[]; rowCount: number | null }>): Executor {
+  return {
+    async query<T>(sql: string, params: unknown[] = []) {
+      const res = await run(toPgPlaceholders(sql), params);
+      return res.rows as T[];
+    },
+    async queryOne<T>(sql: string, params: unknown[] = []) {
+      const res = await run(toPgPlaceholders(sql), params);
+      return res.rows[0] as T | undefined;
+    },
+    async execute(sql: string, params: unknown[] = []) {
+      const res = await run(toPgPlaceholders(sql), params);
+      return res.rowCount ?? 0;
+    },
+  };
+}
+
+const pooled = makeExecutor(async (sql, params) => {
+  await ready();
+  return getPool().query(sql, params as never[]);
 });
 
-/* ---------- settings helpers ---------- */
+export const query = pooled.query;
+export const queryOne = pooled.queryOne;
+export const execute = pooled.execute;
 
-export function getSetting<T>(key: string, fallback: T): T {
-  const row = getDb().prepare("SELECT value FROM settings WHERE key = ?").get(key) as { value: string } | undefined;
-  if (!row) return fallback;
+/** Ejecuta varias sentencias dentro de una transacción. */
+export async function transaction<T>(fn: (tx: Executor) => Promise<T>): Promise<T> {
+  await ready();
+  const client: PoolClient = await getPool().connect();
+  const tx = makeExecutor((sql, params) => client.query(sql, params as never[]));
   try {
-    const parsed = JSON.parse(row.value);
-    if (parsed && typeof parsed === "object" && !Array.isArray(parsed) && fallback && typeof fallback === "object" && !Array.isArray(fallback)) {
-      return { ...(fallback as object), ...(parsed as object) } as T;
-    }
-    return parsed as T;
-  } catch {
-    return fallback;
+    await client.query("BEGIN");
+    const result = await fn(tx);
+    await client.query("COMMIT");
+    return result;
+  } catch (err) {
+    await client.query("ROLLBACK").catch(() => {});
+    throw err;
+  } finally {
+    client.release();
   }
 }
 
-export function setSetting(key: string, value: unknown) {
-  getDb()
-    .prepare(
-      `INSERT INTO settings (key, value, updated_at) VALUES (?, ?, datetime('now'))
-       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')`,
-    )
-    .run(key, JSON.stringify(value));
+/* ---------- ajustes / contenido editable ---------- */
+
+export async function getSetting<T>(key: string, fallback: T): Promise<T> {
+  const row = await queryOne<{ value: unknown }>("SELECT value FROM settings WHERE key = ?", [key]);
+  if (!row) return fallback;
+  const parsed = typeof row.value === "string" ? safeParse(row.value) : row.value;
+  if (parsed === undefined) return fallback;
+  if (
+    parsed &&
+    typeof parsed === "object" &&
+    !Array.isArray(parsed) &&
+    fallback &&
+    typeof fallback === "object" &&
+    !Array.isArray(fallback)
+  ) {
+    return { ...(fallback as object), ...(parsed as object) } as T;
+  }
+  return parsed as T;
+}
+
+function safeParse(value: string) {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return undefined;
+  }
+}
+
+export async function setSetting(key: string, value: unknown) {
+  await execute(
+    `INSERT INTO settings (key, value, updated_at) VALUES (?, ?, now())
+     ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()`,
+    [key, JSON.stringify(value)],
+  );
 }

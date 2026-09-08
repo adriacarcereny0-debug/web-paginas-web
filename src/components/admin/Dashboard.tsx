@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
-import { formatDateTime, formatMoney } from "@/lib/utils";
+import { formatDate, formatDateTime, formatMoney } from "@/lib/utils";
 import { Card, EmptyState, PageHeader, StatusBadge } from "./ui";
 
 type Stats = {
@@ -63,7 +63,16 @@ export function Dashboard() {
     { label: "Proyectos", value: c.projects, icon: "image", accent: "bg-slate-100 text-slate-600", href: "/admin/portfolio" },
   ];
 
-  const maxDaily = Math.max(1, ...stats.daily.map((d) => d.c));
+  // El eje siempre muestra los 30 días: los días sin leads se dibujan a cero.
+  const byDay = new Map(stats.daily.map((d) => [d.d, d.c]));
+  const series = Array.from({ length: 30 }, (_, i) => {
+    const date = new Date();
+    date.setUTCHours(0, 0, 0, 0);
+    date.setUTCDate(date.getUTCDate() - (29 - i));
+    const key = date.toISOString().slice(0, 10);
+    return { d: key, c: byDay.get(key) ?? 0 };
+  });
+  const maxDaily = Math.max(1, ...series.map((d) => d.c));
 
   return (
     <>
@@ -97,16 +106,27 @@ export function Dashboard() {
           {stats.daily.length === 0 ? (
             <p className="py-10 text-center text-sm text-slate-500">Todavía no hay datos suficientes.</p>
           ) : (
-            <div className="mt-6 flex h-40 items-end gap-1">
-              {stats.daily.map((d) => (
-                <div key={d.d} className="group flex h-full flex-1 items-end" title={`${d.d}: ${d.c}`}>
-                  <div
-                    className="w-full rounded-t bg-gradient-to-t from-brand-200 to-brand-500 transition-all group-hover:from-brand-300 group-hover:to-brand-600"
-                    style={{ height: `${Math.max(4, (d.c / maxDaily) * 100)}%` }}
-                  />
-                </div>
-              ))}
-            </div>
+            <>
+              <div className="mt-6 flex h-40 items-end gap-[3px]">
+                {series.map((d) => (
+                  <div key={d.d} className="group flex h-full flex-1 items-end" title={`${d.d}: ${d.c} lead(s)`}>
+                    <div
+                      className={`w-full rounded-t transition-all ${
+                        d.c > 0
+                          ? "bg-gradient-to-t from-brand-300 to-brand-600 group-hover:from-brand-400"
+                          : "bg-slate-100"
+                      }`}
+                      style={{ height: d.c > 0 ? `${Math.max(6, (d.c / maxDaily) * 100)}%` : "3px" }}
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="mt-2 flex justify-between text-[11px] text-slate-400">
+                <span>{formatDate(series[0].d)}</span>
+                <span>Máximo: {maxDaily}/día</span>
+                <span>Hoy</span>
+              </div>
+            </>
           )}
         </Card>
 

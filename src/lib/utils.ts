@@ -47,6 +47,10 @@ export function markdownToBlocks(md: string) {
 }
 
 export function escapeCsv(value: unknown) {
+  if (value instanceof Date) {
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())} ${pad(value.getHours())}:${pad(value.getMinutes())}`;
+  }
   const s = value === null || value === undefined ? "" : String(value);
   return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }

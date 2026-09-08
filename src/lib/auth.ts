@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
-import { getDb } from "./db";
+import { queryOne } from "./db";
 
 const COOKIE = "nova_session";
 const MAX_AGE = 60 * 60 * 8; // 8h
@@ -83,9 +83,10 @@ export function hashPassword(password: string) {
 }
 
 export function findUserByEmail(email: string) {
-  return getDb().prepare("SELECT * FROM users WHERE email = ?").get(email.toLowerCase().trim()) as
-    | { id: number; email: string; name: string; role: string; password_hash: string }
-    | undefined;
+  return queryOne<{ id: number; email: string; name: string; role: string; password_hash: string }>(
+    "SELECT * FROM users WHERE email = ?",
+    [email.toLowerCase().trim()],
+  );
 }
 
 export const SESSION_COOKIE = COOKIE;

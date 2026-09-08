@@ -18,6 +18,8 @@ export type ResourceDef = {
   defaultOrder: string;
   allowCreate: boolean;
   allowDelete: boolean;
+  /** Columnas a devolver. Se usa para no arrastrar los binarios de la tabla media. */
+  selectColumns?: string[];
 };
 
 const sort = { name: "sort_order", type: "number" as const, default: 0 };
@@ -196,6 +198,7 @@ export const RESOURCES: Record<string, ResourceDef> = {
   },
   media: {
     table: "media",
+    selectColumns: ["id", "filename", "original_name", "url", "mime", "size", "width", "height", "alt", "created_at"],
     fields: [{ name: "alt", type: "text", max: 200 }],
     searchable: ["original_name", "filename", "alt"],
     filterable: [],

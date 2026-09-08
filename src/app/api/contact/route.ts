@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { getDb } from "@/lib/db";
+import { transaction } from "@/lib/db";
 import { clean, emailSchema, fail, nameSchema, ok, readJson, zodErrors } from "@/lib/api";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 
@@ -27,34 +27,33 @@ export async function POST(req: Request) {
   const d = parsed.data;
   if (d.website) return fail("Solicitud no válida", 400);
 
-  const db = getDb();
   const email = d.email.toLowerCase();
 
-  db.transaction(() => {
-    const lead = db.prepare("SELECT id FROM leads WHERE email = ?").get(email) as { id: number } | undefined;
+  await transaction(async (tx) => {
+    const lead = await tx.queryOne<{ id: number }>("SELECT id FROM leads WHERE email = ?", [email]);
     let leadId = lead?.id;
     if (!leadId) {
-      const info = db
-        .prepare(
-          `INSERT INTO leads (name, company, email, phone, business_type, source, status)
-           VALUES (?,?,?,?,?, 'contacto', 'nuevo')`,
-        )
-        .run(clean(d.name, 80), clean(d.company, 120), email, clean(d.phone, 30), clean(d.project_type, 120));
-      leadId = Number(info.lastInsertRowid);
+      const created = await tx.queryOne<{ id: number }>(
+        `INSERT INTO leads (name, company, email, phone, business_type, source, status)
+         VALUES (?,?,?,?,?, 'contacto', 'nuevo') RETURNING id`,
+        [clean(d.name, 80), clean(d.company, 120), email, clean(d.phone, 30), clean(d.project_type, 120)],
+      );
+      leadId = created!.id;
     }
-    db.prepare(
+    await tx.execute(
       `INSERT INTO messages (name, email, phone, company, project_type, message, lead_id, status)
        VALUES (?,?,?,?,?,?,?, 'nuevo')`,
-    ).run(
-      clean(d.name, 80),
-      email,
-      clean(d.phone, 30),
-      clean(d.company, 120),
-      clean(d.project_type, 120),
-      clean(d.message, 4000),
-      leadId,
+      [
+        clean(d.name, 80),
+        email,
+        clean(d.phone, 30),
+        clean(d.company, 120),
+        clean(d.project_type, 120),
+        clean(d.message, 4000),
+        leadId,
+      ],
     );
-  })();
+  });
 
   return ok({ received: true });
 }

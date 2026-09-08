@@ -1,9 +1,7 @@
-import { getDb } from "@/lib/db";
+import { execute, queryOne } from "@/lib/db";
 import { RESOURCES, coerce } from "@/lib/resources";
 import { fail, ok, readJson } from "@/lib/api";
 import { getSession } from "@/lib/auth";
-import fs from "node:fs";
-import path from "node:path";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +12,8 @@ export async function GET(_req: Request, { params }: Ctx) {
   const { resource, id } = await params;
   const def = RESOURCES[resource];
   if (!def) return fail("Recurso no encontrado", 404);
-  const row = getDb().prepare(`SELECT * FROM ${def.table} WHERE id = ?`).get(Number(id));
+  const columns = def.selectColumns ? def.selectColumns.join(", ") : "*";
+  const row = await queryOne(`SELECT ${columns} FROM ${def.table} WHERE id = ?`, [Number(id)]);
   if (!row) return fail("Registro no encontrado", 404);
   return ok({ row });
 }
@@ -43,15 +42,15 @@ export async function PATCH(req: Request, { params }: Ctx) {
   if (Object.keys(errors).length) return fail("Revisa los campos", 400, errors);
   if (!sets.length) return fail("No hay cambios que guardar", 400);
 
-  const hasUpdatedAt = ["leads", "quotes"].includes(def.table);
-  if (hasUpdatedAt) sets.push("updated_at = datetime('now')");
+  if (["leads", "quotes"].includes(def.table)) sets.push("updated_at = now()");
+  const columns = def.selectColumns ? def.selectColumns.join(", ") : "*";
 
   try {
-    const info = getDb()
-      .prepare(`UPDATE ${def.table} SET ${sets.join(", ")} WHERE id = ?`)
-      .run(...vals, Number(id));
-    if (info.changes === 0) return fail("Registro no encontrado", 404);
-    const row = getDb().prepare(`SELECT * FROM ${def.table} WHERE id = ?`).get(Number(id));
+    const row = await queryOne(
+      `UPDATE ${def.table} SET ${sets.join(", ")} WHERE id = ? RETURNING ${columns}`,
+      [...vals, Number(id)],
+    );
+    if (!row) return fail("Registro no encontrado", 404);
     return ok({ row });
   } catch (err) {
     return fail(err instanceof Error ? err.message : "No se ha podido guardar", 400);
@@ -65,21 +64,7 @@ export async function DELETE(_req: Request, { params }: Ctx) {
   if (!def) return fail("Recurso no encontrado", 404);
   if (!def.allowDelete) return fail("Este recurso no permite eliminar registros", 405);
 
-  if (resource === "media") {
-    const row = getDb().prepare("SELECT filename FROM media WHERE id = ?").get(Number(id)) as
-      | { filename: string }
-      | undefined;
-    if (row?.filename) {
-      const safe = path.basename(row.filename);
-      try {
-        fs.unlinkSync(path.join(process.cwd(), "public", "uploads", safe));
-      } catch {
-        /* el fichero ya no existe */
-      }
-    }
-  }
-
-  const info = getDb().prepare(`DELETE FROM ${def.table} WHERE id = ?`).run(Number(id));
-  if (info.changes === 0) return fail("Registro no encontrado", 404);
+  const changes = await execute(`DELETE FROM ${def.table} WHERE id = ?`, [Number(id)]);
+  if (changes === 0) return fail("Registro no encontrado", 404);
   return ok({ deleted: true });
 }

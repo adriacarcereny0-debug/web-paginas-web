@@ -9,8 +9,7 @@ const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope", displa
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const seo = getContent("seo");
-  const site = getContent("site");
+  const [seo, site] = await Promise.all([getContent("seo"), getContent("site")]);
   const base = seo.siteUrl?.startsWith("http") ? seo.siteUrl : "http://localhost:3000";
 
   return {

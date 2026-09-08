@@ -1,4 +1,4 @@
-import { getDb } from "@/lib/db";
+import { query, queryOne } from "@/lib/db";
 import { fail, ok } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 
@@ -16,7 +16,9 @@ export async function GET(req: Request) {
   const where: string[] = [];
   const args: unknown[] = [];
   if (q) {
-    where.push("(q.public_id LIKE ? OR l.name LIKE ? OR l.email LIKE ? OR l.company LIKE ? OR q.project_type LIKE ?)");
+    where.push(
+      "(q.public_id ILIKE ? OR l.name ILIKE ? OR l.email ILIKE ? OR l.company ILIKE ? OR q.project_type ILIKE ?)",
+    );
     for (let i = 0; i < 5; i++) args.push(`%${q}%`);
   }
   if (status) {
@@ -24,21 +26,18 @@ export async function GET(req: Request) {
     args.push(status);
   }
   const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
-  const db = getDb();
 
-  const total = (
-    db.prepare(`SELECT COUNT(*) c FROM quotes q LEFT JOIN leads l ON l.id = q.lead_id ${whereSql}`).get(...args) as {
-      c: number;
-    }
-  ).c;
+  const totalRow = await queryOne<{ c: number }>(
+    `SELECT COUNT(*)::int AS c FROM quotes q LEFT JOIN leads l ON l.id = q.lead_id ${whereSql}`,
+    args,
+  );
+  const rows = await query(
+    `SELECT q.*, l.name, l.surname, l.email, l.company, l.phone, l.status AS lead_status
+     FROM quotes q LEFT JOIN leads l ON l.id = q.lead_id
+     ${whereSql} ORDER BY q.created_at DESC, q.id DESC LIMIT ? OFFSET ?`,
+    [...args, perPage, (page - 1) * perPage],
+  );
 
-  const rows = db
-    .prepare(
-      `SELECT q.*, l.name, l.surname, l.email, l.company, l.phone, l.status lead_status
-       FROM quotes q LEFT JOIN leads l ON l.id = q.lead_id
-       ${whereSql} ORDER BY q.created_at DESC, q.id DESC LIMIT ? OFFSET ?`,
-    )
-    .all(...args, perPage, (page - 1) * perPage);
-
+  const total = totalRow?.c ?? 0;
   return ok({ rows, total, page, perPage, pages: Math.max(1, Math.ceil(total / perPage)) });
 }

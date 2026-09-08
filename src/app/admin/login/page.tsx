@@ -5,8 +5,8 @@ import { getContent } from "@/lib/content";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Acceso al panel", robots: { index: false, follow: false } };
 
-export default function LoginPage() {
-  const site = getContent("site");
+export default async function LoginPage() {
+  const site = await getContent("site");
   return (
     <main className="grid min-h-dvh lg:grid-cols-2">
       <div className="flex items-center justify-center px-6 py-14">

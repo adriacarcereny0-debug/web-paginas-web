@@ -53,12 +53,13 @@ captura de leads, gestión comercial y un CMS propio para editar toda la web sin
 
 ```bash
 npm install
-cp .env.example .env.local   # edita AUTH_SECRET, ADMIN_EMAIL y ADMIN_PASSWORD
+cp .env.example .env.local   # edita DATABASE_URL, AUTH_SECRET, ADMIN_EMAIL y ADMIN_PASSWORD
 npm run dev                  # http://localhost:3000
 ```
 
-La base de datos SQLite se crea sola en `data/app.db` en el primer arranque, junto con el
-usuario administrador y el contenido de ejemplo (servicios, FAQ, portfolio DEMO,
+Necesitas una base de datos PostgreSQL (Neon, Supabase, Vercel Postgres, Railway o una local).
+No hay que ejecutar ninguna migración a mano: en el primer arranque la aplicación crea las
+tablas, el usuario administrador y el contenido de ejemplo (servicios, FAQ, portfolio DEMO,
 testimonios DEMO y toda la configuración de la calculadora).
 
 Para producción:
@@ -72,12 +73,12 @@ npm run start
 
 | Variable | Obligatoria | Descripción |
 | --- | --- | --- |
+| `DATABASE_URL` | Sí | Cadena de conexión de PostgreSQL. Usa el endpoint *pooled* si tu proveedor lo ofrece. También se aceptan `POSTGRES_URL` y `POSTGRES_PRISMA_URL`. |
 | `AUTH_SECRET` | Sí en producción | Firma la cookie de sesión del panel. Genérala con `openssl rand -base64 32`. Sin ella, la aplicación no arranca en producción. |
 | `ADMIN_EMAIL` | No | Email del primer administrador. Por defecto `admin@novastudio.es`. |
 | `ADMIN_PASSWORD` | No | Contraseña del primer administrador. Por defecto `admin1234` — **cámbiala**. |
 | `ADMIN_NAME` | No | Nombre mostrado en el panel. |
-| `DATABASE_PATH` | No | Ruta del fichero SQLite. Por defecto `./data/app.db`. |
-| `DATA_DIR` | No | Carpeta de datos. Por defecto `./data`. |
+| `PG_POOL_MAX` | No | Conexiones máximas del pool por instancia. Por defecto 5. |
 
 Estas variables solo se leen en el servidor; ninguna clave llega al navegador.
 
@@ -124,34 +125,41 @@ src/
     admin/(panel)/           panel protegido
     api/                     API pública (calculadora, presupuesto, contacto)
     api/admin/               API del panel (CRUD, ajustes, media, exportación, stats)
+    api/media/               entrega de las imágenes guardadas en la base de datos
     sitemap.ts, robots.ts, icon.svg
   components/site/           secciones de la web pública
   components/admin/          interfaz del panel
   components/ui/             iconos y animaciones
   lib/
-    db.ts                    conexión SQLite, esquema y migraciones
+    db.ts                    conexión a PostgreSQL, consultas y transacciones
+    schema.ts                esquema de la base de datos
     seed.ts                  contenido inicial
     content.ts               contenido editable y sus valores por defecto
     pricing.ts               motor de cálculo del presupuesto
     resources.ts             definición del CRUD genérico del panel
     auth.ts, rate-limit.ts, api.ts, utils.ts
   proxy.ts                   protección de las rutas /admin
-data/app.db                  base de datos (se crea sola, no se versiona)
-public/uploads/              imágenes subidas desde el panel
 ```
 
 ## Base de datos
 
-SQLite mediante `better-sqlite3`, en modo WAL y con claves foráneas activas. Tablas:
-`users`, `settings`, `services`, `faqs`, `projects`, `testimonials`, `calc_groups`,
-`calc_options`, `leads`, `lead_notes`, `quotes`, `messages`, `media`.
+PostgreSQL mediante `pg`. Tablas: `users`, `settings`, `services`, `faqs`, `projects`,
+`testimonials`, `calc_groups`, `calc_options`, `leads`, `lead_notes`, `quotes`, `messages`,
+`media`.
 
-El esquema se crea y migra solo al arrancar (`src/lib/db.ts`). Nada relevante se guarda en
-`localStorage`: el navegador solo conserva un borrador temporal del wizard en `sessionStorage`
-para que el usuario no pierda lo que llevaba si recarga.
+El esquema vive en `src/lib/schema.ts` y se aplica de forma idempotente en el primer arranque
+de cada instancia, protegido por un *advisory lock* para que dos arranques simultáneos no se
+pisen. `src/lib/seed.ts` inserta el contenido inicial solo si las tablas están vacías, así que
+nunca sobrescribe tus datos.
 
-Si prefieres PostgreSQL o MySQL, el único punto a sustituir es `src/lib/db.ts`
-(el resto del código usa consultas SQL estándar a través de ese módulo).
+Las imágenes que subes desde el panel **se guardan en la propia base de datos** (columna
+`media.data`) y se sirven desde `/api/media/<id>/<archivo>` con cache inmutable. Así la
+aplicación funciona igual en un hosting sin disco persistente como Vercel. Si algún día
+manejas muchas imágenes o muy pesadas, el punto a cambiar por un almacenamiento externo
+(S3, Vercel Blob, Cloudinary) es `src/app/api/admin/media/route.ts`.
+
+Nada relevante se guarda en `localStorage`: el navegador solo conserva un borrador temporal
+del wizard en `sessionStorage` para que el usuario no pierda lo que llevaba si recarga.
 
 ## Seguridad
 
@@ -162,7 +170,8 @@ Si prefieres PostgreSQL o MySQL, el único punto a sustituir es `src/lib/db.ts`
   restringidas a una lista blanca en `src/lib/resources.ts`.
 - Rate limiting por IP: login (8/15 min), presupuestos (8/10 min), contacto (5/10 min).
 - Campo honeypot antispam en los formularios públicos.
-- Subida de imágenes limitada por tipo MIME y tamaño (8 MB), con nombre de fichero saneado.
+- Subida de imágenes limitada por tipo MIME y tamaño (8 MB), reprocesada con sharp y servida
+  con `X-Content-Type-Options: nosniff`.
 - Cabeceras `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` y `Permissions-Policy`.
 - Los textos legales editables se renderizan con un formateador propio muy limitado
   (títulos, listas, negrita y citas): no se inyecta HTML arbitrario en la página.
@@ -176,17 +185,21 @@ para desindexar la web mientras esté en construcción.
 
 ## Despliegue
 
-La aplicación necesita un servidor Node (no exportación estática) y **un disco persistente**
-para `data/` y `public/uploads/`.
+La aplicación necesita un servidor Node (no es una exportación estática) y una base de datos
+PostgreSQL. No usa el disco para nada, así que funciona en hostings serverless.
 
-- **VPS / Docker / Railway / Render / Fly.io**: `npm ci && npm run build && npm run start`,
-  montando un volumen en `data/` y en `public/uploads/`.
-- **Vercel**: el sistema de ficheros es efímero, así que ahí habría que mover la base de datos
-  a un servicio gestionado (Postgres, Turso…) y las imágenes a un almacenamiento externo.
-  Solo hay que adaptar `src/lib/db.ts` y la ruta `src/app/api/admin/media/route.ts`.
+**Vercel** (configuración usada actualmente):
 
-Recuerda definir `AUTH_SECRET` en el entorno de producción y hacer copias de seguridad
-periódicas del fichero `data/app.db`.
+1. Importa el repositorio. El framework se detecta solo, no hay que tocar los comandos.
+2. En *Settings → Environment Variables* añade `DATABASE_URL`, `AUTH_SECRET`, `ADMIN_EMAIL`
+   y `ADMIN_PASSWORD` para los entornos Production, Preview y Development.
+3. Vuelve a desplegar. La primera petición crea las tablas y el contenido inicial.
+
+**VPS, Docker, Railway, Render o Fly.io**: `npm ci && npm run build && npm run start` con las
+mismas variables de entorno.
+
+Recuerda definir `AUTH_SECRET` en producción (sin ella la aplicación se niega a arrancar) y
+tener activadas las copias de seguridad de tu proveedor de base de datos.
 
 ## Integraciones opcionales
 

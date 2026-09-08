@@ -1,29 +1,29 @@
-import type Database from "better-sqlite3";
+import type { PoolClient } from "pg";
 import bcrypt from "bcryptjs";
 
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "admin@novastudio.es").toLowerCase();
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin1234";
 const ADMIN_NAME = process.env.ADMIN_NAME || "Administrador";
 
-export function seedIfEmpty(db: Database.Database) {
-  const count = (t: string) => (db.prepare(`SELECT COUNT(*) c FROM ${t}`).get() as { c: number }).c;
+export async function seedIfEmpty(db: PoolClient) {
+  const count = async (t: string) => Number((await db.query(`SELECT COUNT(*)::int AS c FROM ${t}`)).rows[0].c);
 
-  if (count("users") === 0) {
-    db.prepare("INSERT INTO users (email, password_hash, name, role) VALUES (?, ?, ?, 'admin')").run(
+  if ((await count("users")) === 0) {
+    await db.query("INSERT INTO users (email, password_hash, name, role) VALUES ($1, $2, $3, 'admin')", [
       ADMIN_EMAIL,
       bcrypt.hashSync(ADMIN_PASSWORD, 10),
       ADMIN_NAME,
-    );
+    ]);
   }
 
-  if (count("services") === 0) seedServices(db);
-  if (count("faqs") === 0) seedFaqs(db);
-  if (count("projects") === 0) seedProjects(db);
-  if (count("testimonials") === 0) seedTestimonials(db);
-  if (count("calc_groups") === 0) seedCalculator(db);
+  if ((await count("services")) === 0) await seedServices(db);
+  if ((await count("faqs")) === 0) await seedFaqs(db);
+  if ((await count("projects")) === 0) await seedProjects(db);
+  if ((await count("testimonials")) === 0) await seedTestimonials(db);
+  if ((await count("calc_groups")) === 0) await seedCalculator(db);
 }
 
-export function seedServices(db: Database.Database) {
+export async function seedServices(db: PoolClient) {
   const rows = [
     ["Web corporativa", "web-corporativa", "Para empresas y profesionales que necesitan una presencia online sólida y creíble.", "building", 900, "Desde 900 €", ["Hasta 6 secciones", "Diseño a medida", "Formulario de contacto", "SEO básico"]],
     ["Landing page", "landing-page", "Páginas diseñadas con un único objetivo: conseguir contactos o ventas.", "target", 550, "Desde 550 €", ["Página única de alta conversión", "Copy orientado a resultados", "Integración con analítica", "Test A/B opcional"]],
@@ -32,13 +32,15 @@ export function seedServices(db: Database.Database) {
     ["Mantenimiento", "mantenimiento", "Actualizaciones, cambios, copias de seguridad y soporte continuo.", "shield", 50, "Desde 50 €/mes", ["Copias de seguridad", "Actualizaciones de seguridad", "Cambios de contenido", "Soporte prioritario"]],
     ["Servicios adicionales", "servicios-adicionales", "SEO, optimización, integraciones, formularios y automatizaciones a medida.", "sparkles", 150, "Desde 150 €", ["SEO técnico y de contenidos", "Automatizaciones", "Integraciones con CRM", "Analítica avanzada"]],
   ];
-  const stmt = db.prepare(
-    "INSERT INTO services (title, slug, description, icon, price_from, price_label, features, sort_order) VALUES (?,?,?,?,?,?,?,?)",
-  );
-  rows.forEach((r, i) => stmt.run(r[0], r[1], r[2], r[3], r[4], r[5], JSON.stringify(r[6]), i));
+  for (const [i, r] of rows.entries()) {
+    await db.query(
+      "INSERT INTO services (title, slug, description, icon, price_from, price_label, features, sort_order) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)",
+      [r[0], r[1], r[2], r[3], r[4], r[5], JSON.stringify(r[6]), i],
+    );
+  }
 }
 
-export function seedFaqs(db: Database.Database) {
+export async function seedFaqs(db: PoolClient) {
   const rows: [string, string][] = [
     ["¿Cuánto cuesta una página web?", "Depende del alcance: número de páginas, funcionalidades y nivel de diseño. Una landing sencilla parte de unos cientos de euros y una tienda online completa es una inversión mayor. La forma más rápida de saberlo es usar nuestro creador de presupuestos: en 2 minutos tendrás una estimación personalizada."],
     ["¿Cuánto tardáis en crearla?", "Una landing page suele estar lista en 1-2 semanas y una web corporativa en 3-5 semanas. Las tiendas online y los proyectos a medida requieren más tiempo. Al recibir tu presupuesto verás una estimación de plazo concreta."],
@@ -51,11 +53,12 @@ export function seedFaqs(db: Database.Database) {
     ["¿Qué ocurre después de publicar la web?", "Te acompañamos. Revisamos que todo funcione correctamente, te formamos en el uso del panel y puedes contratar mantenimiento para seguir mejorando la web con el tiempo."],
     ["¿Cómo son las formas de pago?", "Habitualmente se abona una parte al inicio del proyecto y el resto a la entrega. Las condiciones concretas se detallan en el presupuesto que recibes."],
   ];
-  const stmt = db.prepare("INSERT INTO faqs (question, answer, sort_order) VALUES (?,?,?)");
-  rows.forEach((r, i) => stmt.run(r[0], r[1], i));
+  for (const [i, r] of rows.entries()) {
+    await db.query("INSERT INTO faqs (question, answer, sort_order) VALUES ($1,$2,$3)", [r[0], r[1], i]);
+  }
 }
 
-export function seedProjects(db: Database.Database) {
+export async function seedProjects(db: PoolClient) {
   const rows = [
     ["[DEMO] Estudio de arquitectura Vela", "Web corporativa con portfolio de obras, fichas de proyecto y formulario de contacto cualificado.", "Web corporativa", ["Next.js", "Diseño a medida", "SEO"]],
     ["[DEMO] Clínica dental Serra", "Landing de captación con sistema de reservas de cita y seguimiento de conversiones.", "Landing page", ["Reservas", "Analítica", "Copywriting"]],
@@ -64,23 +67,28 @@ export function seedProjects(db: Database.Database) {
     ["[DEMO] Gimnasio Pulse", "Web con área privada para socios, planes de entrenamiento y pagos recurrentes.", "Web a medida", ["Área privada", "Suscripciones"]],
     ["[DEMO] Bufete Aroca", "Web corporativa sobria orientada a generar confianza y captar consultas cualificadas.", "Web corporativa", ["Diseño", "SEO local"]],
   ];
-  const stmt = db.prepare(
-    "INSERT INTO projects (title, description, category, tags, url, is_demo, sort_order) VALUES (?,?,?,?,'',1,?)",
-  );
-  rows.forEach((r, i) => stmt.run(r[0], r[1], r[2], JSON.stringify(r[3]), i));
+  for (const [i, r] of rows.entries()) {
+    await db.query(
+      "INSERT INTO projects (title, description, category, tags, url, is_demo, sort_order) VALUES ($1,$2,$3,$4,'',1,$5)",
+      [r[0], r[1], r[2], JSON.stringify(r[3]), i],
+    );
+  }
 }
 
-export function seedTestimonials(db: Database.Database) {
+export async function seedTestimonials(db: PoolClient) {
   const rows = [
     ["[DEMO] Marta Ruiz", "Estudio Vela", "Explicaron cada paso en un lenguaje que entendemos. La web transmite exactamente lo que somos y hemos notado más consultas serias.", 5],
     ["[DEMO] Jordi Camps", "Clínica Serra", "El proceso fue rapidísimo y muy ordenado. Tener el presupuesto claro desde el principio nos dio mucha tranquilidad.", 5],
     ["[DEMO] Laura Ferrer", "Panadería La Espiga", "Pasamos de no vender online a tener pedidos cada semana. El panel es muy fácil de usar y podemos cambiarlo todo.", 5],
   ];
-  const stmt = db.prepare("INSERT INTO testimonials (name, company, text, rating, is_demo, sort_order) VALUES (?,?,?,?,1,?)");
-  rows.forEach((r, i) => stmt.run(r[0], r[1], r[2], r[3], i));
+  for (const [i, r] of rows.entries()) {
+    await db.query("INSERT INTO testimonials (name, company, text, rating, is_demo, sort_order) VALUES ($1,$2,$3,$4,1,$5)", [
+      r[0], r[1], r[2], r[3], i,
+    ]);
+  }
 }
 
-export function seedCalculator(db: Database.Database) {
+export async function seedCalculator(db: PoolClient) {
   const groups: {
     key: string;
     title: string;
@@ -170,16 +178,19 @@ export function seedCalculator(db: Database.Database) {
     },
   ];
 
-  const gStmt = db.prepare(
-    "INSERT INTO calc_groups (key, title, subtitle, type, required, sort_order) VALUES (?,?,?,?,?,?)",
-  );
-  const oStmt = db.prepare(
-    "INSERT INTO calc_options (group_id, label, description, price, price_type, days, sort_order) VALUES (?,?,?,?,?,?,?)",
-  );
-  groups.forEach((g, gi) => {
-    const info = gStmt.run(g.key, g.title, g.subtitle, g.type, g.required, gi);
-    g.options.forEach((o, oi) => oStmt.run(info.lastInsertRowid, o[0], o[1], o[2], o[3], o[4], oi));
-  });
+  for (const [gi, g] of groups.entries()) {
+    const res = await db.query(
+      "INSERT INTO calc_groups (key, title, subtitle, type, required, sort_order) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id",
+      [g.key, g.title, g.subtitle, g.type, g.required, gi],
+    );
+    const groupId = res.rows[0].id;
+    for (const [oi, o] of g.options.entries()) {
+      await db.query(
+        "INSERT INTO calc_options (group_id, label, description, price, price_type, days, sort_order) VALUES ($1,$2,$3,$4,$5,$6,$7)",
+        [groupId, o[0], o[1], o[2], o[3], o[4], oi],
+      );
+    }
+  }
 }
 
 export const SEED_ADMIN = { email: ADMIN_EMAIL, password: ADMIN_PASSWORD };

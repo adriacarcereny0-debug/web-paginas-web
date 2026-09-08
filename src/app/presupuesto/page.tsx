@@ -23,8 +23,8 @@ const HIGHLIGHTS = [
   { icon: "shield", title: "Datos protegidos", text: "Solo los usamos para contactarte." },
 ];
 
-export default function PresupuestoPage() {
-  const site = getContent("site");
+export default async function PresupuestoPage() {
+  const [site, footer] = await Promise.all([getContent("site"), getContent("footer")]);
 
   return (
     <>
@@ -64,7 +64,7 @@ export default function PresupuestoPage() {
           </div>
         </div>
       </main>
-      <Footer site={site} footer={getContent("footer")} />
+      <Footer site={site} footer={footer} />
     </>
   );
 }

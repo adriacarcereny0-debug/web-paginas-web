@@ -1,4 +1,4 @@
-import { getDb } from "@/lib/db";
+import { query } from "@/lib/db";
 import { fail } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { toCsv } from "@/lib/utils";
@@ -9,8 +9,8 @@ const EXPORTS: Record<string, { sql: string; columns: { key: string; label: stri
   leads: {
     sql: `SELECT l.id, l.name, l.surname, l.company, l.email, l.phone, l.city, l.business_type, l.source, l.status,
                  l.created_at,
-                 (SELECT COUNT(*) FROM quotes q WHERE q.lead_id = l.id) quotes,
-                 (SELECT MAX((q.price_min + q.price_max)/2) FROM quotes q WHERE q.lead_id = l.id) estimated
+                 (SELECT COUNT(*)::int FROM quotes q WHERE q.lead_id = l.id) AS quotes,
+                 (SELECT MAX((q.price_min + q.price_max)/2) FROM quotes q WHERE q.lead_id = l.id) AS estimated
           FROM leads l ORDER BY l.created_at DESC`,
     columns: [
       { key: "id", label: "ID" },
@@ -73,7 +73,7 @@ export async function GET(req: Request) {
   const def = EXPORTS[type];
   if (!def) return fail("Exportación no disponible", 404);
 
-  const rows = getDb().prepare(def.sql).all() as Record<string, unknown>[];
+  const rows = await query<Record<string, unknown>>(def.sql);
   const csv = toCsv(rows, def.columns);
   const date = new Date().toISOString().slice(0, 10);
 

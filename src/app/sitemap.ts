@@ -3,8 +3,8 @@ import { getContent } from "@/lib/content";
 
 export const dynamic = "force-dynamic";
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const { siteUrl } = getContent("seo");
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const { siteUrl } = await getContent("seo");
   const base = siteUrl?.replace(/\/$/, "") || "http://localhost:3000";
   const now = new Date();
   return [

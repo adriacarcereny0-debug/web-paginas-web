@@ -7,8 +7,4 @@ build
 npm-debug.log*
 .env
 .env*.local
-/data/*.db
-/data/*.db-*
-/public/uploads/*
-!/public/uploads/.gitkeep
 tsconfig.tsbuildinfo

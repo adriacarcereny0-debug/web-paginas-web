@@ -1,4 +1,4 @@
-import { getDb } from "@/lib/db";
+import { transaction } from "@/lib/db";
 import { RESOURCES } from "@/lib/resources";
 import { fail, ok, readJson } from "@/lib/api";
 import { getSession } from "@/lib/auth";
@@ -15,8 +15,11 @@ export async function POST(req: Request) {
   const ids = Array.isArray(body.ids) ? body.ids.map(Number).filter(Number.isFinite) : [];
   if (!ids.length) return fail("Lista de identificadores vacía", 400);
 
-  const db = getDb();
-  const stmt = db.prepare(`UPDATE ${def.table} SET sort_order = ? WHERE id = ?`);
-  db.transaction(() => ids.forEach((id, i) => stmt.run(i, id)))();
+  await transaction(async (tx) => {
+    for (const [index, id] of ids.entries()) {
+      await tx.execute(`UPDATE ${def.table} SET sort_order = ? WHERE id = ?`, [index, id]);
+    }
+  });
+
   return ok({ updated: ids.length });
 }

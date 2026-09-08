@@ -1,4 +1,4 @@
-import { getDb } from "@/lib/db";
+import { query } from "@/lib/db";
 import { getContent } from "@/lib/content";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -15,17 +15,29 @@ import { WhatsAppButton } from "@/components/site/WhatsAppButton";
 
 export const dynamic = "force-dynamic";
 
-export default function HomePage() {
-  const db = getDb();
-  const services = db.prepare("SELECT * FROM services WHERE visible = 1 ORDER BY sort_order, id").all() as ServiceRow[];
-  const projects = db.prepare("SELECT * FROM projects WHERE visible = 1 ORDER BY sort_order, id").all() as ProjectRow[];
-  const testimonials = db
-    .prepare("SELECT * FROM testimonials WHERE visible = 1 ORDER BY sort_order, id")
-    .all() as TestimonialRow[];
-  const faqs = db.prepare("SELECT * FROM faqs WHERE visible = 1 ORDER BY sort_order, id").all() as FaqRow[];
+export default async function HomePage() {
+  const [services, projects, testimonials, faqs] = await Promise.all([
+    query<ServiceRow>("SELECT * FROM services WHERE visible = 1 ORDER BY sort_order, id"),
+    query<ProjectRow>("SELECT * FROM projects WHERE visible = 1 ORDER BY sort_order, id"),
+    query<TestimonialRow>("SELECT * FROM testimonials WHERE visible = 1 ORDER BY sort_order, id"),
+    query<FaqRow>("SELECT * FROM faqs WHERE visible = 1 ORDER BY sort_order, id"),
+  ]);
 
-  const site = getContent("site");
-  const seo = getContent("seo");
+  const [site, seo, hero, trust, servicesCopy, steps, portfolioCopy, testimonialsCopy, faqCopy, cta, contactCopy, footer] =
+    await Promise.all([
+      getContent("site"),
+      getContent("seo"),
+      getContent("hero"),
+      getContent("trust"),
+      getContent("servicesCopy"),
+      getContent("steps"),
+      getContent("portfolioCopy"),
+      getContent("testimonialsCopy"),
+      getContent("faqCopy"),
+      getContent("cta"),
+      getContent("contactCopy"),
+      getContent("footer"),
+    ]);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -64,17 +76,17 @@ export default function HomePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Header brandName={site.brandName} initials={site.brandInitials} />
       <main id="contenido">
-        <Hero content={getContent("hero")} />
-        <Trust content={getContent("trust")} />
-        <Services copy={getContent("servicesCopy")} services={services} />
-        <Steps content={getContent("steps")} />
-        <Portfolio copy={getContent("portfolioCopy")} projects={projects} />
-        <Testimonials copy={getContent("testimonialsCopy")} items={testimonials} />
-        <Faq copy={getContent("faqCopy")} items={faqs} />
-        <FinalCta content={getContent("cta")} />
-        <Contact copy={getContent("contactCopy")} site={site} services={services.map((s) => s.title)} />
+        <Hero content={hero} />
+        <Trust content={trust} />
+        <Services copy={servicesCopy} services={services} />
+        <Steps content={steps} />
+        <Portfolio copy={portfolioCopy} projects={projects} />
+        <Testimonials copy={testimonialsCopy} items={testimonials} />
+        <Faq copy={faqCopy} items={faqs} />
+        <FinalCta content={cta} />
+        <Contact copy={contactCopy} site={site} services={services.map((s) => s.title)} />
       </main>
-      <Footer site={site} footer={getContent("footer")} />
+      <Footer site={site} footer={footer} />
       <WhatsAppButton phone={site.whatsapp} brandName={site.brandName} />
     </>
   );

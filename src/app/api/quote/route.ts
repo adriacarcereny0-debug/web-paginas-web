@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { z } from "zod";
-import { getDb } from "@/lib/db";
+import { transaction } from "@/lib/db";
 import { computeQuote, getCalculatorConfig, type Selections } from "@/lib/pricing";
 import { clean, emailSchema, fail, nameSchema, ok, phoneSchema, readJson, zodErrors } from "@/lib/api";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
@@ -29,37 +29,45 @@ export async function POST(req: Request) {
   const data = parsed.data;
   if (data.website) return fail("Solicitud no válida", 400);
 
-  const groups = getCalculatorConfig();
-  const result = computeQuote(data.selections as Selections, groups);
+  const groups = await getCalculatorConfig();
+  const result = await computeQuote(data.selections as Selections, groups);
   if (!result.valid) return fail(result.errors[0] || "Faltan opciones por seleccionar", 400);
 
-  const db = getDb();
   const email = data.email.toLowerCase();
+  const publicId = `P-${new Date().getFullYear()}-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
 
-  const tx = db.transaction(() => {
-    const existing = db.prepare("SELECT id FROM leads WHERE email = ?").get(email) as { id: number } | undefined;
+  await transaction(async (tx) => {
+    const existing = await tx.queryOne<{ id: number }>("SELECT id FROM leads WHERE email = ?", [email]);
     let leadId: number;
     if (existing) {
       leadId = existing.id;
-      db.prepare(
-        `UPDATE leads SET name = ?, surname = ?, company = ?, phone = ?, city = ?, business_type = ?,
-         updated_at = datetime('now') WHERE id = ?`,
-      ).run(
-        clean(data.name, 80),
-        clean(data.surname, 80),
-        clean(data.company, 120),
-        clean(data.phone, 30),
-        clean(data.city, 120),
-        clean(data.businessType, 120),
-        leadId,
+      await tx.execute(
+        // Solo se sobrescriben los campos que llegan con valor: un segundo
+        // presupuesto no debe borrar los datos que ya teníamos del lead.
+        `UPDATE leads SET
+           name = ?,
+           surname = COALESCE(NULLIF(?, ''), surname),
+           company = COALESCE(NULLIF(?, ''), company),
+           phone = COALESCE(NULLIF(?, ''), phone),
+           city = COALESCE(NULLIF(?, ''), city),
+           business_type = COALESCE(NULLIF(?, ''), business_type),
+           updated_at = now()
+         WHERE id = ?`,
+        [
+          clean(data.name, 80),
+          clean(data.surname, 80),
+          clean(data.company, 120),
+          clean(data.phone, 30),
+          clean(data.city, 120),
+          clean(data.businessType, 120),
+          leadId,
+        ],
       );
     } else {
-      const info = db
-        .prepare(
-          `INSERT INTO leads (name, surname, company, email, phone, city, business_type, source, status)
-           VALUES (?,?,?,?,?,?,?, 'calculadora', 'nuevo')`,
-        )
-        .run(
+      const created = await tx.queryOne<{ id: number }>(
+        `INSERT INTO leads (name, surname, company, email, phone, city, business_type, source, status)
+         VALUES (?,?,?,?,?,?,?, 'calculadora', 'nuevo') RETURNING id`,
+        [
           clean(data.name, 80),
           clean(data.surname, 80),
           clean(data.company, 120),
@@ -67,30 +75,28 @@ export async function POST(req: Request) {
           clean(data.phone, 30),
           clean(data.city, 120),
           clean(data.businessType, 120),
-        );
-      leadId = Number(info.lastInsertRowid);
+        ],
+      );
+      leadId = created!.id;
     }
 
-    const publicId = `P-${new Date().getFullYear()}-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
-    db.prepare(
+    await tx.execute(
       `INSERT INTO quotes (public_id, lead_id, selections, summary, project_type, price_min, price_max, monthly,
         days_min, days_max, status) VALUES (?,?,?,?,?,?,?,?,?,?, 'borrador')`,
-    ).run(
-      publicId,
-      leadId,
-      JSON.stringify(data.selections),
-      JSON.stringify(result.summary),
-      result.projectType,
-      result.priceMin,
-      result.priceMax,
-      result.monthly,
-      result.daysMin,
-      result.daysMax,
+      [
+        publicId,
+        leadId,
+        JSON.stringify(data.selections),
+        JSON.stringify(result.summary),
+        result.projectType,
+        result.priceMin,
+        result.priceMax,
+        result.monthly,
+        result.daysMin,
+        result.daysMax,
+      ],
     );
-    return { leadId, publicId };
   });
-
-  const { publicId } = tx();
 
   return ok({
     publicId,

@@ -1,4 +1,4 @@
-import { getDb } from "@/lib/db";
+import { execute, queryOne } from "@/lib/db";
 import { clean, fail, ok, readJson } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 
@@ -14,13 +14,13 @@ export async function POST(req: Request, { params }: Ctx) {
   const text = clean(body.body, 3000);
   if (text.length < 2) return fail("La nota está vacía", 400, { body: "Escribe una nota" });
 
-  const lead = getDb().prepare("SELECT id FROM leads WHERE id = ?").get(Number(id));
+  const lead = await queryOne("SELECT id FROM leads WHERE id = ?", [Number(id)]);
   if (!lead) return fail("Lead no encontrado", 404);
 
-  const info = getDb()
-    .prepare("INSERT INTO lead_notes (lead_id, body, author) VALUES (?,?,?)")
-    .run(Number(id), text, session.name || session.email);
-  const row = getDb().prepare("SELECT * FROM lead_notes WHERE id = ?").get(info.lastInsertRowid);
+  const row = await queryOne(
+    "INSERT INTO lead_notes (lead_id, body, author) VALUES (?,?,?) RETURNING *",
+    [Number(id), text, session.name || session.email],
+  );
   return ok({ row }, { status: 201 });
 }
 
@@ -29,7 +29,7 @@ export async function DELETE(req: Request, { params }: Ctx) {
   const { id } = await params;
   const noteId = Number(new URL(req.url).searchParams.get("noteId"));
   if (!noteId) return fail("Falta el identificador de la nota", 400);
-  const info = getDb().prepare("DELETE FROM lead_notes WHERE id = ? AND lead_id = ?").run(noteId, Number(id));
-  if (!info.changes) return fail("Nota no encontrada", 404);
+  const changes = await execute("DELETE FROM lead_notes WHERE id = ? AND lead_id = ?", [noteId, Number(id)]);
+  if (!changes) return fail("Nota no encontrada", 404);
   return ok({ deleted: true });
 }

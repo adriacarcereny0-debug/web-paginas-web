@@ -9,8 +9,8 @@ export const dynamic = "force-dynamic";
  * Los precios NO se exponen: el cálculo es siempre autoritativo en el servidor.
  */
 export async function GET() {
-  const cfg = getContent("calculator");
-  const groups = getCalculatorConfig().map((g) => ({
+  const [cfg, config] = await Promise.all([getContent("calculator"), getCalculatorConfig()]);
+  const groups = config.map((g) => ({
     key: g.key,
     title: g.title,
     subtitle: g.subtitle,

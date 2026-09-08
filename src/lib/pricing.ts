@@ -1,4 +1,4 @@
-import { getDb } from "./db";
+import { query } from "./db";
 import { getContent } from "./content";
 
 export type CalcOption = {
@@ -26,14 +26,15 @@ export type CalcGroup = {
   options: CalcOption[];
 };
 
-export function getCalculatorConfig(includeHidden = false): CalcGroup[] {
-  const db = getDb();
-  const groups = db
-    .prepare(`SELECT * FROM calc_groups ${includeHidden ? "" : "WHERE visible = 1"} ORDER BY sort_order, id`)
-    .all() as Omit<CalcGroup, "options">[];
-  const options = db
-    .prepare(`SELECT * FROM calc_options ${includeHidden ? "" : "WHERE visible = 1"} ORDER BY sort_order, id`)
-    .all() as CalcOption[];
+export async function getCalculatorConfig(includeHidden = false): Promise<CalcGroup[]> {
+  const [groups, options] = await Promise.all([
+    query<Omit<CalcGroup, "options">>(
+      `SELECT * FROM calc_groups ${includeHidden ? "" : "WHERE visible = 1"} ORDER BY sort_order, id`,
+    ),
+    query<CalcOption>(
+      `SELECT * FROM calc_options ${includeHidden ? "" : "WHERE visible = 1"} ORDER BY sort_order, id`,
+    ),
+  ]);
   return groups.map((g) => ({ ...g, options: options.filter((o) => o.group_id === g.id) }));
 }
 
@@ -57,8 +58,8 @@ export type QuoteResult = {
  * Single source of truth for pricing. Used by the API (authoritative) and,
  * with the same config payload, by the client for the live preview.
  */
-export function computeQuote(selections: Selections, groups: CalcGroup[]): QuoteResult {
-  const cfg = getContent("calculator");
+export async function computeQuote(selections: Selections, groups: CalcGroup[]): Promise<QuoteResult> {
+  const cfg = await getContent("calculator");
   const errors: string[] = [];
   let base = Number(cfg.basePrice) || 0;
   let monthly = 0;

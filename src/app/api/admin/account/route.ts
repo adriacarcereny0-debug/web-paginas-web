@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { getDb } from "@/lib/db";
+import { execute, queryOne } from "@/lib/db";
 import { getSession, hashPassword, setSessionCookie, verifyPassword } from "@/lib/auth";
 import { emailSchema, fail, ok, readJson, zodErrors } from "@/lib/api";
 
@@ -20,10 +20,7 @@ export async function PATCH(req: Request) {
   if (!parsed.success) return fail("Revisa los datos", 400, zodErrors(parsed.error));
   const { name, email, currentPassword, newPassword } = parsed.data;
 
-  const db = getDb();
-  const user = db.prepare("SELECT * FROM users WHERE id = ?").get(session.id) as
-    | { id: number; password_hash: string }
-    | undefined;
+  const user = await queryOne<{ id: number; password_hash: string }>("SELECT * FROM users WHERE id = ?", [session.id]);
   if (!user) return fail("Usuario no encontrado", 404);
 
   if (newPassword) {
@@ -31,11 +28,11 @@ export async function PATCH(req: Request) {
     if (!verifyPassword(currentPassword, user.password_hash)) {
       return fail("La contraseña actual no es correcta", 400, { currentPassword: "Contraseña incorrecta" });
     }
-    db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(hashPassword(newPassword), user.id);
+    await execute("UPDATE users SET password_hash = ? WHERE id = ?", [hashPassword(newPassword), user.id]);
   }
 
   try {
-    db.prepare("UPDATE users SET name = ?, email = ? WHERE id = ?").run(name, email.toLowerCase(), user.id);
+    await execute("UPDATE users SET name = ?, email = ? WHERE id = ?", [name, email.toLowerCase(), user.id]);
   } catch {
     return fail("Ese email ya está en uso", 400, { email: "Email no disponible" });
   }

@@ -15,7 +15,7 @@ export async function POST(req: Request) {
   const parsed = schema.safeParse(await readJson(req));
   if (!parsed.success) return fail("Revisa los datos introducidos", 400, zodErrors(parsed.error));
 
-  const user = findUserByEmail(parsed.data.email);
+  const user = await findUserByEmail(parsed.data.email);
   if (!user || !verifyPassword(parsed.data.password, user.password_hash)) {
     return fail("Email o contraseña incorrectos", 401);
   }

@@ -27,8 +27,7 @@ export default async function LegalPage({ params }: Params) {
   const entry = MAP[slug as keyof typeof MAP];
   if (!entry) notFound();
 
-  const site = getContent("site");
-  const legal = getContent("legal");
+  const [site, legal, footer] = await Promise.all([getContent("site"), getContent("legal"), getContent("footer")]);
   const blocks = markdownToBlocks(legal[entry.key] || "");
 
   return (
@@ -58,7 +57,7 @@ export default async function LegalPage({ params }: Params) {
           </div>
         </div>
       </main>
-      <Footer site={site} footer={getContent("footer")} />
+      <Footer site={site} footer={footer} />
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { getDb } from "@/lib/db";
+import { query, queryOne } from "@/lib/db";
 import { RESOURCES, coerce } from "@/lib/resources";
 import { fail, ok, readJson } from "@/lib/api";
 import { getSession } from "@/lib/auth";
@@ -24,25 +24,27 @@ export async function GET(req: Request, { params }: Ctx) {
   const args: unknown[] = [];
 
   if (q && def.searchable.length) {
-    where.push(`(${def.searchable.map((c) => `${c} LIKE ?`).join(" OR ")})`);
+    where.push(`(${def.searchable.map((c) => `${c} ILIKE ?`).join(" OR ")})`);
     def.searchable.forEach(() => args.push(`%${q}%`));
   }
   for (const key of def.filterable) {
     const value = url.searchParams.get(key);
     if (value !== null && value !== "") {
-      where.push(`${key} = ?`);
+      where.push(`${key}::text = ?`);
       args.push(value);
     }
   }
 
   const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
   const orderSql = def.sortable.includes(sortParam) ? `${sortParam} ${dir}` : def.defaultOrder;
+  const columns = def.selectColumns ? def.selectColumns.join(", ") : "*";
 
-  const db = getDb();
-  const total = (db.prepare(`SELECT COUNT(*) c FROM ${def.table} ${whereSql}`).get(...args) as { c: number }).c;
-  const rows = db
-    .prepare(`SELECT * FROM ${def.table} ${whereSql} ORDER BY ${orderSql} LIMIT ? OFFSET ?`)
-    .all(...args, perPage, (page - 1) * perPage);
+  const totalRow = await queryOne<{ c: number }>(`SELECT COUNT(*)::int AS c FROM ${def.table} ${whereSql}`, args);
+  const total = totalRow?.c ?? 0;
+  const rows = await query(
+    `SELECT ${columns} FROM ${def.table} ${whereSql} ORDER BY ${orderSql} LIMIT ? OFFSET ?`,
+    [...args, perPage, (page - 1) * perPage],
+  );
 
   return ok({ rows, total, page, perPage, pages: Math.max(1, Math.ceil(total / perPage)) });
 }
@@ -72,10 +74,10 @@ export async function POST(req: Request, { params }: Ctx) {
   if (Object.keys(missing).length) return fail("Faltan campos obligatorios", 400, missing);
 
   try {
-    const info = getDb()
-      .prepare(`INSERT INTO ${def.table} (${cols.join(", ")}) VALUES (${cols.map(() => "?").join(", ")})`)
-      .run(...vals);
-    const row = getDb().prepare(`SELECT * FROM ${def.table} WHERE id = ?`).get(info.lastInsertRowid);
+    const row = await queryOne(
+      `INSERT INTO ${def.table} (${cols.join(", ")}) VALUES (${cols.map(() => "?").join(", ")}) RETURNING *`,
+      vals,
+    );
     return ok({ row }, { status: 201 });
   } catch (err) {
     return fail(err instanceof Error ? err.message : "No se ha podido crear el registro", 400);

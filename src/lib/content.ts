@@ -225,6 +225,6 @@ export const DEFAULTS = {
 
 export type ContentKey = keyof typeof DEFAULTS;
 
-export function getContent<K extends ContentKey>(key: K): (typeof DEFAULTS)[K] {
+export function getContent<K extends ContentKey>(key: K): Promise<(typeof DEFAULTS)[K]> {
   return getSetting(key, DEFAULTS[key]);
 }

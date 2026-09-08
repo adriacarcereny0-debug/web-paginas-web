@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: "Panel de administración", robots: {
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
   if (!session) redirect("/admin/login");
-  const site = getContent("site");
+  const site = await getContent("site");
 
   return (
     <AdminShell user={{ name: session.name, email: session.email }} brandName={site.brandName} initials={site.brandInitials}>

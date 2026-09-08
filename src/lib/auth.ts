@@ -1,7 +1,9 @@
 import crypto from "node:crypto";
 import { cookies } from "next/headers";
-import bcrypt from "bcryptjs";
 import { queryOne } from "./db";
+import { hashPassword, normalizePassword, verifyPassword } from "./password";
+
+export { hashPassword, normalizePassword, verifyPassword };
 
 const COOKIE = "nova_session";
 const MAX_AGE = 60 * 60 * 8; // 8h
@@ -72,14 +74,6 @@ export class UnauthorizedError extends Error {
   constructor() {
     super("No autorizado");
   }
-}
-
-export function verifyPassword(password: string, hash: string) {
-  return bcrypt.compareSync(password, hash);
-}
-
-export function hashPassword(password: string) {
-  return bcrypt.hashSync(password, 10);
 }
 
 export function findUserByEmail(email: string) {

@@ -1,8 +1,9 @@
 import type { PoolClient } from "pg";
-import bcrypt from "bcryptjs";
+import { hashPassword } from "./password";
 
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "admin@novastudio.es").toLowerCase();
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin1234";
+const ADMIN_PASSWORD_RESET = /^(1|true|yes|si|sí)$/i.test(process.env.ADMIN_PASSWORD_RESET || "");
 const ADMIN_NAME = process.env.ADMIN_NAME || "Administrador";
 
 export async function seedIfEmpty(db: PoolClient) {
@@ -16,9 +17,21 @@ export async function seedIfEmpty(db: PoolClient) {
   if (existingAdmin.rows.length === 0) {
     await db.query("INSERT INTO users (email, password_hash, name, role) VALUES ($1, $2, $3, 'admin')", [
       ADMIN_EMAIL,
-      bcrypt.hashSync(ADMIN_PASSWORD, 10),
+      hashPassword(ADMIN_PASSWORD),
       ADMIN_NAME,
     ]);
+  } else if (ADMIN_PASSWORD_RESET) {
+    // Vía de emergencia para recuperar el acceso: con ADMIN_PASSWORD_RESET=1 en las
+    // variables de entorno, al arrancar se restablece la contraseña de ADMIN_EMAIL
+    // con el valor de ADMIN_PASSWORD. Quita la variable en cuanto puedas entrar.
+    await db.query("UPDATE users SET password_hash = $1 WHERE email = $2", [
+      hashPassword(ADMIN_PASSWORD),
+      ADMIN_EMAIL,
+    ]);
+    console.warn(
+      "[seed] ADMIN_PASSWORD_RESET activo: se ha restablecido la contraseña de %s. Elimina la variable de entorno.",
+      ADMIN_EMAIL,
+    );
   }
 
   if ((await count("services")) === 0) await seedServices(db);

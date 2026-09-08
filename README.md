@@ -79,6 +79,7 @@ npm run start
 | `ADMIN_EMAIL` | No | Email del administrador. Si esa cuenta no existe todavía, se crea al arrancar; si ya existe, no se toca. Por defecto `admin@novastudio.es`. |
 | `ADMIN_PASSWORD` | No | Contraseña con la que se crea esa cuenta. Por defecto `admin1234` — **cámbiala**. |
 | `ADMIN_NAME` | No | Nombre mostrado en el panel. |
+| `ADMIN_PASSWORD_RESET` | No | Vía de emergencia. Con el valor `1`, al arrancar se restablece la contraseña de `ADMIN_EMAIL` usando `ADMIN_PASSWORD`. Elimina la variable en cuanto recuperes el acceso. |
 | `PG_POOL_MAX` | No | Conexiones máximas del pool por instancia. Por defecto 5. |
 
 Estas variables solo se leen en el servidor; ninguna clave llega al navegador.
@@ -90,7 +91,13 @@ Estas variables solo se leen en el servidor; ninguna clave llega al navegador.
 3. Cambia la contraseña en **Configuración → Cuenta de administrador**.
 
 La sesión dura 8 horas, se guarda en una cookie `httpOnly` firmada con HMAC-SHA256 y el
-login está limitado a 8 intentos cada 15 minutos por IP.
+login está limitado a 8 intentos cada 15 minutos por IP. Las contraseñas se normalizan antes
+de compararlas (se recortan los espacios de los extremos y se unifica la forma Unicode), de
+modo que un espacio colado al copiar y pegar no deja a nadie fuera del panel.
+
+**Si pierdes el acceso**: añade `ADMIN_PASSWORD_RESET=1` a las variables de entorno junto con
+el `ADMIN_EMAIL` y el `ADMIN_PASSWORD` que quieras, vuelve a desplegar y entra con esa
+contraseña. Después borra `ADMIN_PASSWORD_RESET` y despliega de nuevo.
 
 ## Cómo funciona el creador de presupuestos
 

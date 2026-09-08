@@ -22,9 +22,17 @@ function Form() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-      const json = await res.json();
+      // Una respuesta de error del servidor puede no ser JSON: se lee como texto
+      // para no confundir un fallo del servidor con un problema de red.
+      const raw = await res.text();
+      let json: { error?: string } = {};
+      try {
+        json = raw ? JSON.parse(raw) : {};
+      } catch {
+        json = {};
+      }
       if (!res.ok) {
-        setError(json.error || "No hemos podido iniciar sesión");
+        setError(json.error || `El servidor ha respondido con un error (${res.status}). Inténtalo de nuevo.`);
         return;
       }
       const next = params.get("next");

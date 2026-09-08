@@ -10,13 +10,49 @@ const MAX_AGE = 60 * 60 * 8; // 8h
 
 export type SessionUser = { id: number; email: string; name: string; role: string };
 
+let cachedSecret: string | null = null;
+
+/**
+ * Clave con la que se firma la cookie de sesión.
+ *
+ * Lo recomendable es definir AUTH_SECRET. Si no está, en lugar de dejar el panel
+ * inaccesible se deriva una clave estable a partir de la cadena de conexión de la
+ * base de datos, que ya es un secreto del entorno y no cambia entre despliegues
+ * (así las sesiones abiertas siguen siendo válidas). Nunca se usa un valor
+ * predecible desde fuera.
+ */
 function secret(): string {
-  const s = process.env.AUTH_SECRET;
-  if (s && s.length >= 16) return s;
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("AUTH_SECRET no está configurado. Define AUTH_SECRET en las variables de entorno.");
+  if (cachedSecret) return cachedSecret;
+
+  const configured = process.env.AUTH_SECRET;
+  if (configured && configured.length >= 16) {
+    cachedSecret = configured;
+    return cachedSecret;
   }
-  return "dev-only-insecure-secret-change-me";
+
+  const derivedFrom =
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.POSTGRES_PRISMA_URL ||
+    process.env.DATABASE_POSTGRES_URL;
+
+  if (derivedFrom) {
+    console.warn(
+      "[auth] AUTH_SECRET no está configurado: se usa una clave derivada de DATABASE_URL. " +
+        "Define AUTH_SECRET en las variables de entorno para poder rotarla de forma independiente.",
+    );
+    cachedSecret = crypto.createHash("sha256").update(`nova-session-v1:${derivedFrom}`).digest("hex");
+    return cachedSecret;
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "No se puede firmar la sesión: define AUTH_SECRET (o DATABASE_URL) en las variables de entorno.",
+    );
+  }
+
+  cachedSecret = "dev-only-insecure-secret-change-me";
+  return cachedSecret;
 }
 
 function sign(payload: string) {

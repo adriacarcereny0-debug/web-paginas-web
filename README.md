@@ -75,7 +75,7 @@ npm run start
 | Variable | Obligatoria | Descripción |
 | --- | --- | --- |
 | `DATABASE_URL` | Sí | Cadena de conexión de PostgreSQL. Usa el endpoint *pooled* si tu proveedor lo ofrece. También se aceptan `POSTGRES_URL` y `POSTGRES_PRISMA_URL`. |
-| `AUTH_SECRET` | Sí en producción | Firma la cookie de sesión del panel. Genérala con `openssl rand -base64 32`. Sin ella, la aplicación no arranca en producción. |
+| `AUTH_SECRET` | Recomendada | Firma la cookie de sesión del panel. Genérala con `openssl rand -base64 32`. Si no está definida, se deriva una clave estable a partir de `DATABASE_URL` para no bloquear el acceso, pero conviene definirla para poder rotarla por separado. |
 | `ADMIN_EMAIL` | No | Email del administrador. Si esa cuenta no existe todavía, se crea al arrancar; si ya existe, no se toca. Por defecto `admin@novastudio.es`. |
 | `ADMIN_PASSWORD` | No | Contraseña con la que se crea esa cuenta. Por defecto `admin1234` — **cámbiala**. |
 | `ADMIN_NAME` | No | Nombre mostrado en el panel. |
@@ -206,8 +206,9 @@ PostgreSQL. No usa el disco para nada, así que funciona en hostings serverless.
 **VPS, Docker, Railway, Render o Fly.io**: `npm ci && npm run build && npm run start` con las
 mismas variables de entorno.
 
-Recuerda definir `AUTH_SECRET` en producción (sin ella la aplicación se niega a arrancar) y
-tener activadas las copias de seguridad de tu proveedor de base de datos.
+Define `AUTH_SECRET` en producción (si falta, la sesión se firma con una clave derivada de
+`DATABASE_URL`, que funciona pero no se puede rotar de forma independiente) y ten activadas
+las copias de seguridad de tu proveedor de base de datos.
 
 ## Imágenes
 

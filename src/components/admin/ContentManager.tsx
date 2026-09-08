@@ -1,14 +1,24 @@
 "use client";
 import { useState } from "react";
 import { PageHeader } from "./ui";
-import { RepeaterList, SaveBar, Section, TextArea, TextField, useSettings } from "./SettingsForm";
+import { RepeaterList, SaveBar, Section, TextArea, TextField, Toggle, useSettings } from "./SettingsForm";
 import { FieldInput } from "./CrudManager";
-import type { CtaSection, FooterContent, Hero, LegalContent, SectionCopy, StepsSection, TrustSection } from "@/lib/content";
+import type {
+  CtaSection,
+  FooterContent,
+  Hero,
+  LegalContent,
+  ReviewsSection,
+  SectionCopy,
+  StepsSection,
+  TrustSection,
+} from "@/lib/content";
 
 const TABS = [
   { key: "hero", label: "Hero" },
   { key: "trust", label: "Confianza" },
   { key: "steps", label: "Cómo trabajamos" },
+  { key: "resenas", label: "Reseñas" },
   { key: "secciones", label: "Títulos de sección" },
   { key: "cta", label: "CTA final" },
   { key: "footer", label: "Footer" },
@@ -43,6 +53,7 @@ export function ContentManager() {
       {tab === "hero" && <HeroEditor />}
       {tab === "trust" && <TrustEditor />}
       {tab === "steps" && <StepsEditor />}
+      {tab === "resenas" && <ReviewsCopyEditor />}
       {tab === "secciones" && <SectionCopyEditor />}
       {tab === "cta" && <CtaEditor />}
       {tab === "footer" && <FooterEditor />}
@@ -72,6 +83,18 @@ function HeroEditor() {
         <TextArea label="Subtítulo" value={value.subtitle} onChange={(v) => update((c) => ({ ...c, subtitle: v }))} />
         <TextField label="Botón principal" value={value.primaryCta} onChange={(v) => update((c) => ({ ...c, primaryCta: v }))} />
         <TextField label="Botón secundario" value={value.secondaryCta} onChange={(v) => update((c) => ({ ...c, secondaryCta: v }))} />
+        <div className="sm:col-span-2">
+          <FieldInput
+            field={{
+              name: "image",
+              label: "Imagen principal (opcional)",
+              type: "image",
+              help: "Si subes una imagen sustituye a la composición gráfica de la derecha. Ideal apaisada, mínimo 1200 px de ancho.",
+            }}
+            value={value.image}
+            onChange={(v) => update((c) => ({ ...c, image: String(v) }))}
+          />
+        </div>
         <RepeaterList
           label="Puntos rápidos bajo los botones"
           items={value.bullets.map((b) => ({ text: b }))}
@@ -172,6 +195,42 @@ function CopyBlock({ settingsKey, title }: { settingsKey: string; title: string 
         <TextField label="Etiqueta" value={value.eyebrow} onChange={(v) => update((c) => ({ ...c, eyebrow: v }))} />
         <TextField label="Título" value={value.title} onChange={(v) => update((c) => ({ ...c, title: v }))} />
         <TextArea label="Subtítulo" value={value.subtitle} onChange={(v) => update((c) => ({ ...c, subtitle: v }))} rows={2} />
+      </Section>
+      <SaveBar saving={saving} dirty={dirty} onSave={save} onReset={reset} />
+    </div>
+  );
+}
+
+function ReviewsCopyEditor() {
+  const { value, update, save, reset, saving, dirty } = useSettings<ReviewsSection>("reviewsCopy");
+  if (!value) return <Loading />;
+  return (
+    <div className="space-y-5">
+      <Section
+        title="Sección de reseñas"
+        description="Las reseñas se gestionan en el apartado “Reseñas” del menú. Aquí controlas los textos y el resumen."
+      >
+        <TextField label="Etiqueta" value={value.eyebrow} onChange={(v) => update((c) => ({ ...c, eyebrow: v }))} />
+        <TextField label="Título" value={value.title} onChange={(v) => update((c) => ({ ...c, title: v }))} />
+        <TextArea label="Subtítulo" value={value.subtitle} onChange={(v) => update((c) => ({ ...c, subtitle: v }))} rows={2} />
+        <Toggle
+          label="Mostrar el resumen de valoraciones"
+          checked={value.showSummary}
+          onChange={(v) => update((c) => ({ ...c, showSummary: v }))}
+          help="Nota media, reparto de estrellas y dato destacado."
+        />
+        <TextField
+          label="Dato destacado"
+          value={value.highlightValue}
+          onChange={(v) => update((c) => ({ ...c, highlightValue: v }))}
+          help="Por ejemplo: +200"
+        />
+        <TextField
+          label="Texto del dato destacado"
+          value={value.highlightLabel}
+          onChange={(v) => update((c) => ({ ...c, highlightLabel: v }))}
+          help="Por ejemplo: servicios realizados"
+        />
       </Section>
       <SaveBar saving={saving} dirty={dirty} onSave={save} onReset={reset} />
     </div>

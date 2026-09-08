@@ -3,6 +3,7 @@ import { getSetting } from "./db";
 export type SiteInfo = {
   brandName: string;
   brandInitials: string;
+  logo: string;
   tagline: string;
   email: string;
   phone: string;
@@ -25,6 +26,7 @@ export type Seo = {
 };
 
 export type Hero = {
+  image: string;
   badge: string;
   title: string;
   highlight: string;
@@ -51,6 +53,12 @@ export type StepsSection = {
 
 export type SectionCopy = { eyebrow: string; title: string; subtitle: string };
 
+export type ReviewsSection = SectionCopy & {
+  showSummary: boolean;
+  highlightValue: string;
+  highlightLabel: string;
+};
+
 export type CtaSection = { title: string; subtitle: string; button: string; secondary: string };
 
 export type FooterContent = {
@@ -65,10 +73,11 @@ export const DEFAULTS = {
   site: {
     brandName: "Nova Studio",
     brandInitials: "N",
+    logo: "",
     tagline: "Estudio de diseño y desarrollo web",
     email: "hola@novastudio.es",
-    phone: "+34 600 000 000",
-    whatsapp: "+34600000000",
+    phone: "+34 623 41 27 96",
+    whatsapp: "+34623412796",
     address: "Barcelona, España",
     schedule: "Lunes a viernes, 9:00 - 18:00",
     social: [
@@ -91,6 +100,7 @@ export const DEFAULTS = {
   } satisfies Seo,
 
   hero: {
+    image: "",
     badge: "Disponibilidad para nuevos proyectos",
     title: "Webs profesionales que convierten",
     highlight: "visitas en clientes",
@@ -147,6 +157,15 @@ export const DEFAULTS = {
     subtitle: "Una selección de trabajos y del tipo de resultado que puedes esperar.",
   } satisfies SectionCopy,
 
+  reviewsCopy: {
+    eyebrow: "Reseñas",
+    title: "Lo que opinan quienes ya han trabajado con nosotros",
+    subtitle: "Opiniones reales de clientes, recogidas tras entregar cada proyecto.",
+    showSummary: true,
+    highlightValue: "+200",
+    highlightLabel: "servicios realizados",
+  } satisfies ReviewsSection,
+
   testimonialsCopy: {
     eyebrow: "Testimonios",
     title: "Lo que dicen de trabajar con nosotros",
@@ -183,6 +202,7 @@ export const DEFAULTS = {
           { label: "Servicios", href: "/#servicios" },
           { label: "Cómo trabajamos", href: "/#proceso" },
           { label: "Portfolio", href: "/#portfolio" },
+          { label: "Reseñas", href: "/#resenas" },
           { label: "FAQ", href: "/#faq" },
         ],
       },

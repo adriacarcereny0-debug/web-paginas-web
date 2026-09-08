@@ -28,7 +28,7 @@ export default async function PresupuestoPage() {
 
   return (
     <>
-      <Header brandName={site.brandName} initials={site.brandInitials} />
+      <Header brandName={site.brandName} initials={site.brandInitials} logo={site.logo} />
       <main className="bg-mist pt-[72px]">
         <div className="border-b border-slate-200 bg-white">
           <div className="container-x py-10 lg:py-14">

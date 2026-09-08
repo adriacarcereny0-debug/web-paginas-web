@@ -22,6 +22,7 @@ const NAV = [
       { href: "/admin/servicios", label: "Servicios", icon: "layout" },
       { href: "/admin/calculadora", label: "Calculadora", icon: "calculator" },
       { href: "/admin/portfolio", label: "Portfolio", icon: "image" },
+      { href: "/admin/resenas", label: "Reseñas", icon: "star" },
       { href: "/admin/testimonios", label: "Testimonios", icon: "quote" },
       { href: "/admin/faq", label: "FAQ", icon: "help" },
       { href: "/admin/contenido", label: "Contenido", icon: "edit" },

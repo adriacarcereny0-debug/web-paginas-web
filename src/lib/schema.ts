@@ -69,6 +69,23 @@ export async function runMigrations(client: PoolClient) {
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
   );
 
+  CREATE TABLE IF NOT EXISTS reviews (
+    id SERIAL PRIMARY KEY,
+    author TEXT NOT NULL,
+    service TEXT NOT NULL DEFAULT '',
+    location TEXT NOT NULL DEFAULT '',
+    text TEXT NOT NULL DEFAULT '',
+    rating INTEGER NOT NULL DEFAULT 5,
+    source TEXT NOT NULL DEFAULT 'Web',
+    avatar TEXT NOT NULL DEFAULT '',
+    reviewed_on TEXT NOT NULL DEFAULT '',
+    is_demo INTEGER NOT NULL DEFAULT 1,
+    featured INTEGER NOT NULL DEFAULT 0,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    visible INTEGER NOT NULL DEFAULT 1,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  );
+
   CREATE TABLE IF NOT EXISTS calc_groups (
     id SERIAL PRIMARY KEY,
     key TEXT NOT NULL UNIQUE,
@@ -168,5 +185,6 @@ export async function runMigrations(client: PoolClient) {
   CREATE INDEX IF NOT EXISTS idx_quotes_lead ON quotes(lead_id);
   CREATE INDEX IF NOT EXISTS idx_messages_status ON messages(status);
   CREATE INDEX IF NOT EXISTS idx_calc_options_group ON calc_options(group_id);
+  CREATE INDEX IF NOT EXISTS idx_reviews_visible ON reviews(visible, sort_order);
   `);
 }

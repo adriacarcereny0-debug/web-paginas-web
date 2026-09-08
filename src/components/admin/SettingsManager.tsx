@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { PageHeader, Card } from "./ui";
 import { RepeaterList, SaveBar, Section, TextField, useSettings } from "./SettingsForm";
+import { FieldInput } from "./CrudManager";
 import { useToast } from "./Toast";
 import type { SiteInfo } from "@/lib/content";
 
@@ -25,6 +26,18 @@ export function SettingsManager({ user }: { user: { name: string; email: string 
               help="1 o 2 letras que se muestran en el cuadrado azul."
             />
             <TextField label="Lema" value={value.tagline} onChange={(v) => update((c) => ({ ...c, tagline: v }))} wide />
+            <div className="sm:col-span-2">
+              <FieldInput
+                field={{
+                  name: "logo",
+                  label: "Logotipo (opcional)",
+                  type: "image",
+                  help: "Sustituye al cuadrado azul con las iniciales en la cabecera y el pie. PNG o SVG con fondo transparente, alto mínimo 72 px.",
+                }}
+                value={value.logo}
+                onChange={(v) => update((c) => ({ ...c, logo: String(v) }))}
+              />
+            </div>
           </Section>
 
           <Section title="Datos de contacto" description="Se muestran en el footer y en la sección de contacto.">

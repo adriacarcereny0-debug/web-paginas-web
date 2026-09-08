@@ -31,6 +31,7 @@ export default function TestimoniosPage() {
                   name="star"
                   size={12}
                   className={i < Number(row.rating || 0) ? "text-amber-400" : "text-slate-200"}
+                  fill={i < Number(row.rating || 0) ? "currentColor" : "none"}
                 />
               ))}
             </span>

@@ -8,7 +8,12 @@ const ADMIN_NAME = process.env.ADMIN_NAME || "Administrador";
 export async function seedIfEmpty(db: PoolClient) {
   const count = async (t: string) => Number((await db.query(`SELECT COUNT(*)::int AS c FROM ${t}`)).rows[0].c);
 
-  if ((await count("users")) === 0) {
+  // Se crea el administrador indicado por las variables de entorno siempre que no
+  // exista todavía. Así, si se añaden ADMIN_EMAIL/ADMIN_PASSWORD después del primer
+  // arranque, la cuenta se crea igualmente en lugar de quedarse uno fuera del panel.
+  // Nunca se toca la contraseña de un usuario que ya existe.
+  const existingAdmin = await db.query("SELECT id FROM users WHERE email = $1", [ADMIN_EMAIL]);
+  if (existingAdmin.rows.length === 0) {
     await db.query("INSERT INTO users (email, password_hash, name, role) VALUES ($1, $2, $3, 'admin')", [
       ADMIN_EMAIL,
       bcrypt.hashSync(ADMIN_PASSWORD, 10),
@@ -20,6 +25,7 @@ export async function seedIfEmpty(db: PoolClient) {
   if ((await count("faqs")) === 0) await seedFaqs(db);
   if ((await count("projects")) === 0) await seedProjects(db);
   if ((await count("testimonials")) === 0) await seedTestimonials(db);
+  if ((await count("reviews")) === 0) await seedReviews(db);
   if ((await count("calc_groups")) === 0) await seedCalculator(db);
 }
 
@@ -85,6 +91,54 @@ export async function seedTestimonials(db: PoolClient) {
     await db.query("INSERT INTO testimonials (name, company, text, rating, is_demo, sort_order) VALUES ($1,$2,$3,$4,1,$5)", [
       r[0], r[1], r[2], r[3], i,
     ]);
+  }
+}
+
+export async function seedReviews(db: PoolClient) {
+  const rows: [string, string, string, string, number, string, string][] = [
+    [
+      "[DEMO] Marta Ruiz",
+      "Web corporativa",
+      "Girona",
+      "Trato cercano y plazos cumplidos. Nos explicaron cada paso sin tecnicismos y la web quedó exactamente como la queríamos.",
+      5,
+      "Google",
+      "hace 2 semanas",
+    ],
+    [
+      "[DEMO] Jordi Camps",
+      "Landing page",
+      "Barcelona",
+      "Rápidos y muy profesionales. Desde que publicamos la página recibimos consultas mucho más serias.",
+      5,
+      "Google",
+      "hace 1 mes",
+    ],
+    [
+      "[DEMO] Laura Ferrer",
+      "Tienda online",
+      "Lleida",
+      "Nos montaron la tienda y nos enseñaron a gestionarla. Ahora hacemos los cambios nosotros mismos sin depender de nadie.",
+      5,
+      "WhatsApp",
+      "hace 1 mes",
+    ],
+    [
+      "[DEMO] Sergi Blanco",
+      "Mantenimiento",
+      "Tarragona",
+      "Llevan el mantenimiento de nuestra web desde hace tiempo. Responden rápido y siempre está todo al día.",
+      4,
+      "Google",
+      "hace 2 meses",
+    ],
+  ];
+  for (const [i, r] of rows.entries()) {
+    await db.query(
+      `INSERT INTO reviews (author, service, location, text, rating, source, reviewed_on, is_demo, sort_order)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,1,$8)`,
+      [r[0], r[1], r[2], r[3], r[4], r[5], r[6], i],
+    );
   }
 }
 

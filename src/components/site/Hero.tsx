@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
 import { Reveal } from "@/components/ui/Reveal";
@@ -67,7 +68,20 @@ export function Hero({ content }: { content: HeroContent }) {
         </div>
 
         <Reveal delay={140} className="relative">
-          <HeroMockup />
+          {content.image ? (
+            <div className="relative mx-auto aspect-[4/3] w-full max-w-[560px] overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-card">
+              <Image
+                src={content.image}
+                alt=""
+                fill
+                priority
+                sizes="(max-width: 1024px) 100vw, 560px"
+                className="object-cover"
+              />
+            </div>
+          ) : (
+            <HeroMockup />
+          )}
         </Reveal>
       </div>
     </section>

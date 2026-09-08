@@ -24,7 +24,7 @@ captura de leads, gestión comercial y un CMS propio para editar toda la web sin
 
 - Hero con composición visual propia (sin imágenes de stock, todo CSS/SVG).
 - Sección de confianza, servicios, proceso en 4 pasos, portfolio filtrable,
-  testimonios, FAQ con acordeón, CTA final y contacto.
+  testimonios, reseñas con nota media, FAQ con acordeón, CTA final y contacto.
 - Creador de presupuestos tipo wizard con captura de datos antes de mostrar la estimación.
 - Resultado de presupuesto con resumen, importe, plazo, solicitud en un clic y exportación a PDF (vía impresión).
 - Formulario de contacto, botón flotante de WhatsApp y páginas legales editables.
@@ -42,6 +42,7 @@ captura de leads, gestión comercial y un CMS propio para editar toda la web sin
 | Servicios | CRUD completo con orden, visibilidad, iconos, precios e imágenes. |
 | Calculadora | Precios, reglas, descuentos, pasos y opciones. Nada está escrito en el código. |
 | Portfolio | CRUD de proyectos con imagen, categoría, tecnologías, enlace y marca DEMO. |
+| Reseñas | CRUD de reseñas con valoración, servicio, ciudad, origen, foto, destacadas y marca DEMO. La web calcula sola la nota media y el reparto de estrellas. |
 | Testimonios | CRUD con valoración, foto y marca DEMO. |
 | FAQ | CRUD con orden y visibilidad. |
 | Contenido | Editor de hero, confianza, proceso, títulos de sección, CTA, footer y textos legales. |
@@ -75,8 +76,8 @@ npm run start
 | --- | --- | --- |
 | `DATABASE_URL` | Sí | Cadena de conexión de PostgreSQL. Usa el endpoint *pooled* si tu proveedor lo ofrece. También se aceptan `POSTGRES_URL` y `POSTGRES_PRISMA_URL`. |
 | `AUTH_SECRET` | Sí en producción | Firma la cookie de sesión del panel. Genérala con `openssl rand -base64 32`. Sin ella, la aplicación no arranca en producción. |
-| `ADMIN_EMAIL` | No | Email del primer administrador. Por defecto `admin@novastudio.es`. |
-| `ADMIN_PASSWORD` | No | Contraseña del primer administrador. Por defecto `admin1234` — **cámbiala**. |
+| `ADMIN_EMAIL` | No | Email del administrador. Si esa cuenta no existe todavía, se crea al arrancar; si ya existe, no se toca. Por defecto `admin@novastudio.es`. |
+| `ADMIN_PASSWORD` | No | Contraseña con la que se crea esa cuenta. Por defecto `admin1234` — **cámbiala**. |
 | `ADMIN_NAME` | No | Nombre mostrado en el panel. |
 | `PG_POOL_MAX` | No | Conexiones máximas del pool por instancia. Por defecto 5. |
 
@@ -144,8 +145,8 @@ src/
 ## Base de datos
 
 PostgreSQL mediante `pg`. Tablas: `users`, `settings`, `services`, `faqs`, `projects`,
-`testimonials`, `calc_groups`, `calc_options`, `leads`, `lead_notes`, `quotes`, `messages`,
-`media`.
+`testimonials`, `reviews`, `calc_groups`, `calc_options`, `leads`, `lead_notes`, `quotes`,
+`messages`, `media`.
 
 El esquema vive en `src/lib/schema.ts` y se aplica de forma idempotente en el primer arranque
 de cada instancia, protegido por un *advisory lock* para que dos arranques simultáneos no se
@@ -200,6 +201,18 @@ mismas variables de entorno.
 
 Recuerda definir `AUTH_SECRET` en producción (sin ella la aplicación se niega a arrancar) y
 tener activadas las copias de seguridad de tu proveedor de base de datos.
+
+## Imágenes
+
+Todas las imágenes se suben desde **Media** en el panel (o desde el botón «Elegir imagen» de
+cada formulario) y se optimizan solas a WebP. Se pueden usar en:
+
+- **Logotipo** (Configuración): sustituye al cuadrado con las iniciales en la cabecera y el pie.
+- **Imagen principal del hero** (Contenido → Hero): sustituye a la composición gráfica.
+- **Servicios**: si añades imagen, sustituye al icono de la tarjeta.
+- **Portfolio**: la captura de cada proyecto.
+- **Reseñas y testimonios**: la foto del cliente.
+- **SEO**: imagen social (1200×630) y favicon.
 
 ## Integraciones opcionales
 

@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
@@ -8,11 +9,12 @@ const NAV = [
   { label: "Servicios", href: "/#servicios" },
   { label: "Cómo trabajamos", href: "/#proceso" },
   { label: "Portfolio", href: "/#portfolio" },
+  { label: "Reseñas", href: "/#resenas" },
   { label: "FAQ", href: "/#faq" },
   { label: "Contacto", href: "/#contacto" },
 ];
 
-export function Header({ brandName, initials }: { brandName: string; initials: string }) {
+export function Header({ brandName, initials, logo = "" }: { brandName: string; initials: string; logo?: string }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState("inicio");
@@ -32,7 +34,7 @@ export function Header({ brandName, initials }: { brandName: string; initials: s
   }, [open]);
 
   useEffect(() => {
-    const ids = ["inicio", "servicios", "proceso", "portfolio", "faq", "contacto"];
+    const ids = ["inicio", "servicios", "proceso", "portfolio", "resenas", "faq", "contacto"];
     const sections = ids.map((id) => document.getElementById(id)).filter(Boolean) as HTMLElement[];
     if (!sections.length || typeof IntersectionObserver === "undefined") return;
     const io = new IntersectionObserver(
@@ -54,10 +56,16 @@ export function Header({ brandName, initials }: { brandName: string; initials: s
     >
       <div className="container-x flex h-[72px] items-center justify-between gap-4">
         <Link href="/#inicio" className="flex items-center gap-2.5" onClick={() => setOpen(false)}>
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-brand-600 to-brand-800 text-sm font-bold text-white shadow-[0_8px_20px_-8px_rgba(37,99,235,.9)]">
-            {initials || brandName.charAt(0)}
-          </span>
-          <span className="font-display text-[17px] font-bold tracking-tight text-navy-900">{brandName}</span>
+          {logo ? (
+            <Image src={logo} alt={brandName} width={140} height={36} className="h-9 w-auto object-contain" priority />
+          ) : (
+            <>
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-brand-600 to-brand-800 text-sm font-bold text-white shadow-[0_8px_20px_-8px_rgba(37,99,235,.9)]">
+                {initials || brandName.charAt(0)}
+              </span>
+              <span className="font-display text-[17px] font-bold tracking-tight text-navy-900">{brandName}</span>
+            </>
+          )}
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Navegación principal">
@@ -67,7 +75,7 @@ export function Header({ brandName, initials }: { brandName: string; initials: s
               <Link
                 key={item.href}
                 href={item.href}
-                className={`rounded-full px-3.5 py-2 text-[14.5px] font-medium transition-colors ${
+                className={`rounded-full px-3 py-2 text-sm font-medium transition-colors ${
                   active === id ? "bg-slate-100 text-navy-900" : "text-slate-600 hover:text-navy-900"
                 }`}
               >

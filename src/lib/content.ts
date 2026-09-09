@@ -81,6 +81,21 @@ export type FooterContent = {
 
 export type LegalContent = { privacy: string; cookies: string; legal: string };
 
+/** Datos fiscales y condiciones que aparecen en el documento de presupuesto. */
+export type CompanyInfo = {
+  legalName: string;
+  taxId: string;
+  addressLines: string[];
+  vatRate: number;
+  validityDays: number;
+  paymentTerms: string;
+  bankName: string;
+  iban: string;
+  conditions: string[];
+  documentFooter: string;
+  showBankDetails: boolean;
+};
+
 export const DEFAULTS = {
   site: {
     brandName: "Webora Studio",
@@ -114,7 +129,7 @@ export const DEFAULTS = {
     keywords: "diseño web, páginas web para empresas, desarrollo web, tienda online, landing page",
     ogImage: "",
     favicon: "",
-    siteUrl: "https://web-paginas-web.vercel.app",
+    siteUrl: "https://www.weborastudio.es",
     twitter: "",
     indexable: true,
     googleVerification: "",
@@ -252,6 +267,27 @@ export const DEFAULTS = {
     legal:
       "## Aviso legal\n\n**Titular del sitio web:** completa aquí la razón social o nombre del profesional.\n\n**NIF / CIF:** pendiente de completar.\n\n**Domicilio:** pendiente de completar.\n\n**Email de contacto:** el indicado en la sección de contacto.\n\n**Condiciones de uso:** el acceso a este sitio implica la aceptación de las presentes condiciones. Los contenidos, textos y elementos gráficos son titularidad de la empresa salvo indicación en contrario.\n\n**Responsabilidad:** no se garantiza la ausencia de interrupciones o errores en el acceso, si bien se emplean los medios razonables para evitarlos.\n\n> Texto de ejemplo editable desde el panel de administración.",
   } satisfies LegalContent,
+
+  company: {
+    legalName: "",
+    taxId: "",
+    addressLines: [],
+    vatRate: 21,
+    validityDays: 30,
+    paymentTerms: "Según presupuesto aceptado",
+    bankName: "",
+    iban: "",
+    conditions: [
+      "El presente presupuesto tiene una validez de 30 días naturales a partir de la fecha indicada.",
+      "El desarrollo se realizará conforme al alcance descrito en este documento.",
+      "Los cambios importantes, nuevas funcionalidades o integraciones no contempladas se presupuestarán aparte.",
+      "La entrega final incluye la publicación de la web y la formación básica para su uso.",
+      "Garantía de 3 meses desde la entrega final para corregir errores relacionados con el desarrollo incluido.",
+      "La optimización SEO incluida corresponde a una configuración inicial; no se garantiza una posición concreta en Google.",
+    ],
+    documentFooter: "",
+    showBankDetails: false,
+  } satisfies CompanyInfo,
 
   calculator: {
     enabled: true,

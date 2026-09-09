@@ -107,9 +107,20 @@
 }
 
 @media print {
-  header, footer, nav, .print\:hidden { display: none !important; }
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+  .print\:hidden { display: none !important; }
   main { padding-top: 0 !important; }
   body { background: #fff !important; }
   .container-x { max-width: none !important; padding: 0 !important; }
   a[href]::after { content: ""; }
+  /* El documento de presupuesto se imprime a sangre, sin márgenes propios. */
+  .doc { max-width: none !important; padding: 0 !important; font-size: 10px !important; line-height: 1.4 !important; }
+  /* Separaciones más compactas para que el presupuesto entre en un solo A4. */
+  .doc .doc-gap { margin-top: 14px !important; }
+  .doc td, .doc th { padding-top: 6px !important; padding-bottom: 6px !important; }
+  .doc table { page-break-inside: avoid; }
+  .doc section { page-break-inside: avoid; }
 }

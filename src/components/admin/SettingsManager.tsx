@@ -1,10 +1,10 @@
 "use client";
 import { useState } from "react";
 import { PageHeader, Card } from "./ui";
-import { RepeaterList, SaveBar, Section, TextField, useSettings } from "./SettingsForm";
+import { RepeaterList, SaveBar, Section, TextArea, TextField, Toggle, useSettings } from "./SettingsForm";
 import { FieldInput } from "./CrudManager";
 import { useToast } from "./Toast";
-import type { SiteInfo } from "@/lib/content";
+import type { CompanyInfo, SiteInfo } from "@/lib/content";
 
 export function SettingsManager({ user }: { user: { name: string; email: string } }) {
   const { value, update, save, reset, saving, dirty } = useSettings<SiteInfo>("site");
@@ -105,9 +105,88 @@ export function SettingsManager({ user }: { user: { name: string; email: string 
       )}
 
       <div className="mt-8">
+        <CompanySection />
+      </div>
+
+      <div className="mt-8">
         <AccountSection user={user} />
       </div>
     </>
+  );
+}
+
+function CompanySection() {
+  const { value, update, save, reset, saving, dirty } = useSettings<CompanyInfo>("company");
+  if (!value) return <div className="h-64 animate-pulse rounded-xl bg-slate-100" />;
+
+  return (
+    <div className="space-y-5">
+      <Section
+        title="Datos para el documento de presupuesto"
+        description="Es lo que aparece en el PDF que descarga el cliente. Rellénalo con los datos reales de tu empresa o de tu actividad como autónomo."
+      >
+        <TextField
+          label="Razón social o nombre fiscal"
+          value={value.legalName}
+          onChange={(v) => update((c) => ({ ...c, legalName: v }))}
+          help="Si lo dejas vacío se usa el nombre de la marca."
+        />
+        <TextField label="NIF / CIF" value={value.taxId} onChange={(v) => update((c) => ({ ...c, taxId: v }))} />
+        <TextArea
+          label="Dirección fiscal"
+          value={value.addressLines.join("\n")}
+          onChange={(v) => update((c) => ({ ...c, addressLines: v.split("\n").map((l) => l.trim()).filter(Boolean) }))}
+          rows={3}
+          help="Una línea por renglón. Por ejemplo: calle y número, luego código postal y ciudad."
+        />
+        <TextField
+          label="IVA aplicado (%)"
+          type="number"
+          value={value.vatRate}
+          onChange={(v) => update((c) => ({ ...c, vatRate: Number(v) }))}
+          help="21 en España. Pon 0 si no repercutes IVA."
+        />
+        <TextField
+          label="Validez del presupuesto (días)"
+          type="number"
+          value={value.validityDays}
+          onChange={(v) => update((c) => ({ ...c, validityDays: Number(v) }))}
+        />
+        <TextField
+          label="Forma de pago"
+          value={value.paymentTerms}
+          onChange={(v) => update((c) => ({ ...c, paymentTerms: v }))}
+          wide
+        />
+        <TextField
+          label="Texto del pie del documento"
+          value={value.documentFooter}
+          onChange={(v) => update((c) => ({ ...c, documentFooter: v }))}
+          wide
+          help="Opcional. Por ejemplo: Presupuesto de desarrollo web."
+        />
+        <RepeaterList
+          label="Condiciones"
+          items={value.conditions.map((text) => ({ text }))}
+          onChange={(items) => update((c) => ({ ...c, conditions: items.map((i) => i.text) }))}
+          empty="Sin condiciones."
+          create={() => ({ text: "" })}
+          render={(item, patch) => <TextArea label="Condición" value={item.text} onChange={(v) => patch({ text: v })} rows={2} />}
+        />
+      </Section>
+
+      <Section title="Datos bancarios" description="Solo se imprimen en el documento si activas la casilla.">
+        <Toggle
+          label="Mostrar los datos bancarios en el presupuesto"
+          checked={value.showBankDetails}
+          onChange={(v) => update((c) => ({ ...c, showBankDetails: v }))}
+        />
+        <TextField label="Banco" value={value.bankName} onChange={(v) => update((c) => ({ ...c, bankName: v }))} />
+        <TextField label="IBAN" value={value.iban} onChange={(v) => update((c) => ({ ...c, iban: v }))} />
+      </Section>
+
+      <SaveBar saving={saving} dirty={dirty} onSave={save} onReset={reset} />
+    </div>
   );
 }
 

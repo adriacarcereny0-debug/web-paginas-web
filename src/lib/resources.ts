@@ -202,6 +202,8 @@ export const RESOURCES: Record<string, ResourceDef> = {
       { name: "notes", type: "text", max: 3000 },
       { name: "price_min", type: "number" },
       { name: "price_max", type: "number" },
+      { name: "final_amount", type: "number" },
+      { name: "doc_reference", type: "text", max: 40 },
     ],
     searchable: ["public_id", "project_type"],
     filterable: ["status"],

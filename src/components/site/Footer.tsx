@@ -6,7 +6,7 @@ import type { FooterContent, SiteInfo } from "@/lib/content";
 export function Footer({ site, footer }: { site: SiteInfo; footer: FooterContent }) {
   const year = new Date().getFullYear();
   return (
-    <footer className="border-t border-white/10 bg-navy-900 text-slate-300">
+    <footer className="border-t border-white/10 bg-navy-900 text-slate-300 print:hidden">
       <div className="container-x py-14 lg:py-16">
         <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
           <div>

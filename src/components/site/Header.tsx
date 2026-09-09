@@ -54,7 +54,7 @@ export function Header({ brandName, initials, logo = "" }: { brandName: string; 
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 print:hidden ${
         scrolled ? "border-b border-slate-200/80 bg-white/85 backdrop-blur-xl" : "border-b border-transparent bg-white/0"
       }`}
     >

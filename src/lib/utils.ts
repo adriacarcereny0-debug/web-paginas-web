@@ -6,6 +6,16 @@ export function formatMoney(value: number, currency = "€") {
   return `${new Intl.NumberFormat("es-ES", { maximumFractionDigits: 0 }).format(Math.round(value))} ${currency}`;
 }
 
+/** Importe con dos decimales, para documentos formales (presupuestos y facturas). */
+export function formatAmount(value: number, currency = "€") {
+  // useGrouping en "always" para que 5470 se imprima como 5.470,00, como en cualquier factura.
+  return `${new Intl.NumberFormat("es-ES", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    useGrouping: "always",
+  }).format(value)} ${currency}`;
+}
+
 export function formatDate(value: string | Date) {
   const d = typeof value === "string" ? new Date(value.replace(" ", "T") + (value.includes("Z") ? "" : "Z")) : value;
   if (Number.isNaN(d.getTime())) return String(value);

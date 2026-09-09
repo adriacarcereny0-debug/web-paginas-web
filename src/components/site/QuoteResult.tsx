@@ -157,13 +157,14 @@ export function QuoteResult({
             <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 print:hidden">{error}</p>
           )}
 
-          <button
-            type="button"
-            onClick={() => window.print()}
+          <a
+            href={`/presupuesto/${result.publicId}`}
+            target="_blank"
+            rel="noopener"
             className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-navy-900 print:hidden"
           >
-            <Icon name="download" size={16} /> Descargar en PDF
-          </button>
+            <Icon name="download" size={16} /> Descargar el presupuesto en PDF
+          </a>
         </div>
       </div>
     </div>

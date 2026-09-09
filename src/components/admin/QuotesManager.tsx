@@ -18,6 +18,8 @@ type Quote = {
   days_max: number;
   status: string;
   notes: string;
+  final_amount: number;
+  doc_reference: string;
   summary: string;
   created_at: string;
   name: string | null;
@@ -40,7 +42,16 @@ export function QuotesManager() {
   const [meta, setMeta] = useState({ pages: 1, total: 0 });
   const [detail, setDetail] = useState<Quote | null>(null);
   const [notes, setNotes] = useState("");
+  const [finalAmount, setFinalAmount] = useState("");
+  const [docReference, setDocReference] = useState("");
   const [saving, setSaving] = useState(false);
+
+  function openDetail(q: Quote) {
+    setDetail(q);
+    setNotes(q.notes || "");
+    setFinalAmount(q.final_amount ? String(q.final_amount) : "");
+    setDocReference(q.doc_reference || "");
+  }
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -76,19 +87,20 @@ export function QuotesManager() {
     push("Estado actualizado");
   }
 
-  async function saveNotes() {
+  async function saveDetail() {
     if (!detail) return;
     setSaving(true);
     try {
+      const payload = { notes, final_amount: Number(finalAmount) || 0, doc_reference: docReference };
       const res = await fetch(`/api/admin/quotes/${detail.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ notes }),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) return push("No se ha podido guardar", "error");
-      push("Notas guardadas");
-      setRows((rs) => rs.map((r) => (r.id === detail.id ? { ...r, notes } : r)));
-      setDetail({ ...detail, notes });
+      push("Presupuesto actualizado");
+      setRows((rs) => rs.map((r) => (r.id === detail.id ? { ...r, ...payload } : r)));
+      setDetail({ ...detail, ...payload });
     } finally {
       setSaving(false);
     }
@@ -172,10 +184,7 @@ export function QuotesManager() {
                       <td className="px-4 py-3">
                         <button
                           type="button"
-                          onClick={() => {
-                            setDetail(q);
-                            setNotes(q.notes || "");
-                          }}
+                          onClick={() => openDetail(q)}
                           className="font-mono text-xs font-semibold text-navy-900 hover:text-brand-600"
                         >
                           {q.public_id}
@@ -212,10 +221,7 @@ export function QuotesManager() {
                         <div className="flex justify-end gap-1">
                           <button
                             type="button"
-                            onClick={() => {
-                              setDetail(q);
-                              setNotes(q.notes || "");
-                            }}
+                            onClick={() => openDetail(q)}
                             className="rounded-lg p-2 text-slate-400 transition hover:bg-brand-50 hover:text-brand-600"
                             aria-label="Ver detalle"
                           >
@@ -278,6 +284,50 @@ export function QuotesManager() {
               <QuoteSummary summary={detail.summary} />
             </div>
 
+            <div className="rounded-xl border border-slate-200 p-4">
+              <h5 className="text-sm font-bold text-navy-900">Documento para el cliente</h5>
+              <p className="mt-1 text-xs text-slate-500">
+                Si dejas el importe en blanco, el documento usa el punto medio del rango estimado y lo indica como
+                estimación. Al fijar un importe, el presupuesto pasa a ser cerrado.
+              </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="label" htmlFor="quote-final">
+                    Importe final sin IVA (€)
+                  </label>
+                  <input
+                    id="quote-final"
+                    type="number"
+                    step="any"
+                    value={finalAmount}
+                    onChange={(e) => setFinalAmount(e.target.value)}
+                    className="field py-2 text-sm"
+                    placeholder={String(Math.round((detail.price_min + detail.price_max) / 2))}
+                  />
+                </div>
+                <div>
+                  <label className="label" htmlFor="quote-ref">
+                    Referencia del documento
+                  </label>
+                  <input
+                    id="quote-ref"
+                    value={docReference}
+                    onChange={(e) => setDocReference(e.target.value)}
+                    className="field py-2 text-sm"
+                    placeholder={detail.public_id}
+                  />
+                </div>
+              </div>
+              <a
+                href={`/presupuesto/${detail.public_id}`}
+                target="_blank"
+                rel="noopener"
+                className="btn-secondary btn-sm mt-4"
+              >
+                <Icon name="file" size={15} /> Ver documento
+              </a>
+            </div>
+
             <div>
               <label className="label" htmlFor="quote-notes">
                 Notas internas
@@ -290,8 +340,8 @@ export function QuotesManager() {
                 className="field resize-y text-sm"
                 placeholder="Anotaciones sobre este presupuesto..."
               />
-              <button type="button" onClick={saveNotes} disabled={saving} className="btn-primary btn-sm mt-3">
-                {saving ? "Guardando..." : "Guardar notas"}
+              <button type="button" onClick={saveDetail} disabled={saving} className="btn-primary btn-sm mt-3">
+                {saving ? "Guardando..." : "Guardar cambios"}
               </button>
             </div>
           </div>

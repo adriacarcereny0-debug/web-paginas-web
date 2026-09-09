@@ -153,6 +153,8 @@ export async function runMigrations(client: PoolClient) {
     days_max INTEGER NOT NULL DEFAULT 0,
     status TEXT NOT NULL DEFAULT 'borrador',
     notes TEXT NOT NULL DEFAULT '',
+    final_amount DOUBLE PRECISION NOT NULL DEFAULT 0,
+    doc_reference TEXT NOT NULL DEFAULT '',
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
   );
@@ -196,6 +198,8 @@ export async function runMigrations(client: PoolClient) {
   ALTER TABLE services ADD COLUMN IF NOT EXISTS meta_title TEXT NOT NULL DEFAULT '';
   ALTER TABLE services ADD COLUMN IF NOT EXISTS meta_description TEXT NOT NULL DEFAULT '';
   ALTER TABLE services ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
+  ALTER TABLE quotes ADD COLUMN IF NOT EXISTS final_amount DOUBLE PRECISION NOT NULL DEFAULT 0;
+  ALTER TABLE quotes ADD COLUMN IF NOT EXISTS doc_reference TEXT NOT NULL DEFAULT '';
   CREATE UNIQUE INDEX IF NOT EXISTS idx_services_slug ON services(slug) WHERE slug <> '';
   `);
 }

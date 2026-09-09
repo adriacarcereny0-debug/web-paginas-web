@@ -26,7 +26,10 @@ captura de leads, gestión comercial y un CMS propio para editar toda la web sin
 - Sección de confianza, servicios, proceso en 4 pasos, portfolio filtrable,
   testimonios, reseñas con nota media, FAQ con acordeón, CTA final y contacto.
 - Creador de presupuestos tipo wizard con captura de datos antes de mostrar la estimación.
-- Resultado de presupuesto con resumen, importe, plazo, solicitud en un clic y exportación a PDF (vía impresión).
+- Resultado de presupuesto con resumen, importe, plazo y solicitud en un clic.
+- Documento de presupuesto descargable en PDF con formato de presupuesto formal:
+  datos fiscales, cliente, concepto detallado, base imponible, IVA, total, condiciones
+  y espacio para la firma.
 - Formulario de contacto, botón flotante de WhatsApp y páginas legales editables.
 - Animaciones suaves al hacer scroll, respetando `prefers-reduced-motion`.
 
@@ -37,7 +40,7 @@ captura de leads, gestión comercial y un CMS propio para editar toda la web sin
 | Dashboard | Leads, clientes, presupuestos, mensajes, importe medio, pipeline y gráficos. |
 | Leads | Buscar, filtrar, ordenar, ver ficha completa, editar, notas internas, cambiar estado, eliminar, exportar CSV. |
 | Clientes | Los leads en estado «Cliente». |
-| Presupuestos | Listado con búsqueda y filtros, detalle con las opciones elegidas, notas y estados. |
+| Presupuestos | Listado con búsqueda y filtros, detalle con las opciones elegidas, importe final, referencia, enlace al documento, notas y estados. |
 | Mensajes | Bandeja de entrada con estados (nuevo, leído, respondido, archivado). |
 | Servicios | CRUD completo con orden, visibilidad, iconos, precios e imágenes. |
 | Calculadora | Precios, reglas, descuentos, pasos y opciones. Nada está escrito en el código. |
@@ -257,6 +260,27 @@ mismas variables de entorno.
 Define `AUTH_SECRET` en producción (si falta, la sesión se firma con una clave derivada de
 `DATABASE_URL`, que funciona pero no se puede rotar de forma independiente) y ten activadas
 las copias de seguridad de tu proveedor de base de datos.
+
+## Documento de presupuesto
+
+Cada presupuesto tiene una página propia en `/presupuesto/<referencia>` con el formato de un
+presupuesto formal: cabecera con los datos fiscales, número, fecha y forma de pago; ficha del
+cliente; concepto con el detalle de todo lo que configuró; base imponible, IVA y total;
+condiciones; datos bancarios opcionales y recuadro de aceptación. Se descarga en PDF desde el
+propio documento y cabe en un A4.
+
+El cliente llega desde el botón del resultado del configurador, y tú desde el detalle de cada
+presupuesto en el panel. La página lleva `noindex`: contiene datos personales y la referencia
+es aleatoria, así que solo entra quien tiene el enlace.
+
+**Antes de enviar el primero**, rellena Configuración → *Datos para el documento de
+presupuesto*: razón social, NIF, dirección fiscal, IVA, validez, forma de pago y condiciones.
+Salen vacíos a propósito, para que nunca se envíe un documento con datos que no son tuyos.
+
+Sobre el importe: si dejas el importe final en blanco, el documento usa el punto medio del
+rango estimado y lo marca como estimación orientativa, indicando el rango. En cuanto fijas un
+importe final en el detalle del presupuesto, pasa a ser un presupuesto cerrado. La referencia
+también se puede sustituir por tu propia numeración.
 
 ## Imágenes
 

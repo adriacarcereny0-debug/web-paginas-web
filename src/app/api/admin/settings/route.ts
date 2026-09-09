@@ -2,6 +2,7 @@ import { getSetting, setSetting } from "@/lib/db";
 import { DEFAULTS, type ContentKey } from "@/lib/content";
 import { fail, ok, readJson } from "@/lib/api";
 import { getSession } from "@/lib/auth";
+import { revalidateContent } from "@/lib/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,7 @@ export async function PUT(req: Request) {
   if (size > 200_000) return fail("El contenido es demasiado grande", 413);
 
   await setSetting(key, body.value);
+  revalidateContent();
   return ok({ key, value: await getSetting(key, DEFAULTS[key]) });
 }
 
@@ -39,5 +41,6 @@ export async function DELETE(req: Request) {
   const key = new URL(req.url).searchParams.get("key") as ContentKey | null;
   if (!key || !KEYS.includes(key)) return fail("Clave desconocida", 404);
   await setSetting(key, DEFAULTS[key]);
+  revalidateContent();
   return ok({ key, value: DEFAULTS[key] });
 }

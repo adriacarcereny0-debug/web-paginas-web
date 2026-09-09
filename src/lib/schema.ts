@@ -28,8 +28,12 @@ export async function runMigrations(client: PoolClient) {
     price_from DOUBLE PRECISION NOT NULL DEFAULT 0,
     price_label TEXT NOT NULL DEFAULT '',
     features TEXT NOT NULL DEFAULT '[]',
+    body TEXT NOT NULL DEFAULT '',
+    meta_title TEXT NOT NULL DEFAULT '',
+    meta_description TEXT NOT NULL DEFAULT '',
     sort_order INTEGER NOT NULL DEFAULT 0,
     visible INTEGER NOT NULL DEFAULT 1,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
   );
 
@@ -186,5 +190,12 @@ export async function runMigrations(client: PoolClient) {
   CREATE INDEX IF NOT EXISTS idx_messages_status ON messages(status);
   CREATE INDEX IF NOT EXISTS idx_calc_options_group ON calc_options(group_id);
   CREATE INDEX IF NOT EXISTS idx_reviews_visible ON reviews(visible, sort_order);
+
+  -- Columnas añadidas después de la primera versión del esquema.
+  ALTER TABLE services ADD COLUMN IF NOT EXISTS body TEXT NOT NULL DEFAULT '';
+  ALTER TABLE services ADD COLUMN IF NOT EXISTS meta_title TEXT NOT NULL DEFAULT '';
+  ALTER TABLE services ADD COLUMN IF NOT EXISTS meta_description TEXT NOT NULL DEFAULT '';
+  ALTER TABLE services ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_services_slug ON services(slug) WHERE slug <> '';
   `);
 }

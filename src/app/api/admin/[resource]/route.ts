@@ -2,6 +2,7 @@ import { query, queryOne } from "@/lib/db";
 import { RESOURCES, coerce } from "@/lib/resources";
 import { fail, ok, readJson } from "@/lib/api";
 import { getSession } from "@/lib/auth";
+import { revalidateResource } from "@/lib/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -78,6 +79,7 @@ export async function POST(req: Request, { params }: Ctx) {
       `INSERT INTO ${def.table} (${cols.join(", ")}) VALUES (${cols.map(() => "?").join(", ")}) RETURNING *`,
       vals,
     );
+    revalidateResource(resource);
     return ok({ row }, { status: 201 });
   } catch (err) {
     return fail(err instanceof Error ? err.message : "No se ha podido crear el registro", 400);

@@ -1,12 +1,13 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 
 const NAV = [
   { label: "Inicio", href: "/#inicio" },
-  { label: "Servicios", href: "/#servicios" },
+  { label: "Servicios", href: "/servicios" },
   { label: "Cómo trabajamos", href: "/#proceso" },
   { label: "Portfolio", href: "/#portfolio" },
   { label: "Reseñas", href: "/#resenas" },
@@ -17,6 +18,8 @@ const NAV = [
 export function Header({ brandName, initials, logo = "" }: { brandName: string; initials: string; logo?: string }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const isHome = pathname === "/";
   const [active, setActive] = useState("inicio");
 
   useEffect(() => {
@@ -34,6 +37,7 @@ export function Header({ brandName, initials, logo = "" }: { brandName: string; 
   }, [open]);
 
   useEffect(() => {
+    if (!isHome) return;
     const ids = ["inicio", "servicios", "proceso", "portfolio", "resenas", "faq", "contacto"];
     const sections = ids.map((id) => document.getElementById(id)).filter(Boolean) as HTMLElement[];
     if (!sections.length || typeof IntersectionObserver === "undefined") return;
@@ -46,7 +50,7 @@ export function Header({ brandName, initials, logo = "" }: { brandName: string; 
     );
     sections.forEach((s) => io.observe(s));
     return () => io.disconnect();
-  }, []);
+  }, [isHome]);
 
   return (
     <header
@@ -70,13 +74,17 @@ export function Header({ brandName, initials, logo = "" }: { brandName: string; 
 
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Navegación principal">
           {NAV.map((item) => {
-            const id = item.href.split("#")[1];
+            const id = item.href.split("#")[1] ?? "";
+            // Fuera de la portada el elemento activo lo marca la ruta, no el scroll.
+            const isActive = isHome
+              ? active === id
+              : item.href !== "/#inicio" && pathname.startsWith(item.href.split("#")[0]);
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 className={`rounded-full px-3 py-2 text-sm font-medium transition-colors ${
-                  active === id ? "bg-slate-100 text-navy-900" : "text-slate-600 hover:text-navy-900"
+                  isActive ? "bg-slate-100 text-navy-900" : "text-slate-600 hover:text-navy-900"
                 }`}
               >
                 {item.label}

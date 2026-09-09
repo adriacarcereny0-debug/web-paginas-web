@@ -43,19 +43,72 @@ export async function seedIfEmpty(db: PoolClient) {
 }
 
 export async function seedServices(db: PoolClient) {
-  const rows = [
-    ["Web corporativa", "web-corporativa", "Para empresas y profesionales que necesitan una presencia online sólida y creíble.", "building", 900, "Desde 900 €", ["Hasta 6 secciones", "Diseño a medida", "Formulario de contacto", "SEO básico"]],
-    ["Landing page", "landing-page", "Páginas diseñadas con un único objetivo: conseguir contactos o ventas.", "target", 550, "Desde 550 €", ["Página única de alta conversión", "Copy orientado a resultados", "Integración con analítica", "Test A/B opcional"]],
-    ["Tienda online", "tienda-online", "E-commerce profesionales preparados para vender desde el primer día.", "cart", 1800, "Desde 1.800 €", ["Catálogo de productos", "Pagos online seguros", "Gestión de pedidos", "Formación de uso"]],
-    ["Rediseño web", "rediseno-web", "Modernizamos páginas antiguas y mejoramos su diseño, velocidad y experiencia.", "refresh", 700, "Desde 700 €", ["Auditoría inicial", "Nuevo diseño responsive", "Mejora de velocidad", "Migración de contenidos"]],
-    ["Mantenimiento", "mantenimiento", "Actualizaciones, cambios, copias de seguridad y soporte continuo.", "shield", 50, "Desde 50 €/mes", ["Copias de seguridad", "Actualizaciones de seguridad", "Cambios de contenido", "Soporte prioritario"]],
-    ["Servicios adicionales", "servicios-adicionales", "SEO, optimización, integraciones, formularios y automatizaciones a medida.", "sparkles", 150, "Desde 150 €", ["SEO técnico y de contenidos", "Automatizaciones", "Integraciones con CRM", "Analítica avanzada"]],
+  const rows: [string, string, string, string, number, string, string[], string][] = [
+    [
+      "Web corporativa",
+      "web-corporativa",
+      "Para empresas y profesionales que necesitan una presencia online sólida y creíble.",
+      "building",
+      900,
+      "Desde 900 €",
+      ["Hasta 6 secciones", "Diseño a medida", "Formulario de contacto", "SEO básico"],
+      "Una web corporativa es la carta de presentación de tu empresa: el sitio al que llega quien te busca por tu nombre, quien recibe tu tarjeta o quien te encuentra en Google. Su trabajo es explicar en pocos segundos qué haces, para quién y por qué eres una opción fiable.\n\nPartimos de tu negocio, no de una plantilla. Definimos las secciones que realmente necesitas, escribimos la estructura de cada página pensando en las dudas de tu cliente y diseñamos una identidad visual coherente con tu marca.\n\nCada página se construye con HTML semántico, se optimiza para móvil y se prepara para buscadores: títulos y descripciones propios, imágenes ligeras, datos estructurados y una velocidad de carga cuidada. Al entregarla te formamos para que puedas cambiar textos e imágenes por tu cuenta.",
+    ],
+    [
+      "Landing page",
+      "landing-page",
+      "Páginas diseñadas con un único objetivo: conseguir contactos o ventas.",
+      "target",
+      550,
+      "Desde 550 €",
+      ["Página única de alta conversión", "Copy orientado a resultados", "Integración con analítica", "Test A/B opcional"],
+      "Una landing page tiene un solo objetivo: que quien llega haga una acción concreta, ya sea pedir presupuesto, reservar una cita o comprar. Todo lo que no ayude a eso sobra, y por eso se diseña distinto a una web al uso.\n\nTrabajamos el orden de los argumentos, las objeciones que frenan a tu cliente y la llamada a la acción, y lo apoyamos con un diseño que guía la mirada hacia el formulario. Es la mejor opción si vas a invertir en publicidad, porque cada visita cuesta dinero y conviene aprovecharla.\n\nIncluimos la medición desde el primer día para saber cuánta gente llega, cuánta convierte y en qué punto se cae, de modo que las mejoras posteriores se decidan con datos.",
+    ],
+    [
+      "Tienda online",
+      "tienda-online",
+      "E-commerce profesionales preparados para vender desde el primer día.",
+      "cart",
+      1800,
+      "Desde 1.800 €",
+      ["Catálogo de productos", "Pagos online seguros", "Gestión de pedidos", "Formación de uso"],
+      "Montamos tiendas online pensadas para que vendas y para que gestionarlas no se convierta en un trabajo a tiempo completo. Catálogo, fichas de producto, carrito, pagos con tarjeta y gestión de pedidos, todo en un panel que se entiende sin ser informático.\n\nCuidamos especialmente el proceso de compra: cuantos menos pasos y menos dudas, más pedidos terminados. También la ficha de producto, que es la página que compite en Google con las de tu competencia.\n\nAntes de publicar hacemos pruebas reales de compra, configuramos impuestos y gastos de envío, y te formamos para dar de alta productos y atender pedidos con soltura.",
+    ],
+    [
+      "Rediseño web",
+      "rediseno-web",
+      "Modernizamos páginas antiguas y mejoramos su diseño, velocidad y experiencia.",
+      "refresh",
+      700,
+      "Desde 700 €",
+      ["Auditoría inicial", "Nuevo diseño responsive", "Mejora de velocidad", "Migración de contenidos"],
+      "Si tu web tiene años, probablemente carga lenta, se ve mal en el móvil y transmite una imagen que ya no corresponde con tu negocio. Un rediseño arregla las tres cosas sin empezar de cero.\n\nEmpezamos con una auditoría: qué páginas reciben visitas, cuáles posicionan, qué falla en velocidad y en experiencia de uso. A partir de ahí conservamos lo que funciona y rehacemos lo que resta.\n\nUn punto crítico es la migración: mantenemos las direcciones que ya posicionan o configuramos las redirecciones necesarias, de forma que el rediseño no te haga perder el tráfico que ya tenías.",
+    ],
+    [
+      "Mantenimiento",
+      "mantenimiento",
+      "Actualizaciones, cambios, copias de seguridad y soporte continuo.",
+      "shield",
+      50,
+      "Desde 50 €/mes",
+      ["Copias de seguridad", "Actualizaciones de seguridad", "Cambios de contenido", "Soporte prioritario"],
+      "Una web publicada necesita mantenimiento, igual que cualquier otra herramienta del negocio. Sin él, acaba desactualizada, con fallos de seguridad o con contenido que ya no corresponde.\n\nNuestro plan mensual cubre copias de seguridad periódicas, actualizaciones de seguridad, revisión de que todo funcione (especialmente los formularios) y un número acordado de cambios de contenido al mes.\n\nTambién vigilamos la velocidad y los errores que Google detecta, para corregirlos antes de que afecten a tu posicionamiento. Tú te ocupas de tu negocio y nosotros de que la web acompañe.",
+    ],
+    [
+      "Servicios adicionales",
+      "servicios-adicionales",
+      "SEO, optimización, integraciones, formularios y automatizaciones a medida.",
+      "sparkles",
+      150,
+      "Desde 150 €",
+      ["SEO técnico y de contenidos", "Automatizaciones", "Integraciones con CRM", "Analítica avanzada"],
+      "Más allá de construir la web, hay trabajo que multiplica su rendimiento: posicionamiento en buscadores, mejoras de velocidad, integraciones con las herramientas que ya usas y automatizaciones que te ahorran tareas repetitivas.\n\nEn SEO trabajamos tanto la parte técnica (estructura, velocidad, datos estructurados, indexación) como la de contenidos, creando las páginas que responden a lo que busca tu cliente.\n\nEn automatizaciones conectamos los formularios con tu correo, tu CRM o tu hoja de cálculo, para que ningún contacto se pierda y no tengas que copiar datos a mano.",
+    ],
   ];
+  const stmt =
+    "INSERT INTO services (title, slug, description, icon, price_from, price_label, features, body, sort_order) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)";
   for (const [i, r] of rows.entries()) {
-    await db.query(
-      "INSERT INTO services (title, slug, description, icon, price_from, price_label, features, sort_order) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)",
-      [r[0], r[1], r[2], r[3], r[4], r[5], JSON.stringify(r[6]), i],
-    );
+    await db.query(stmt, [r[0], r[1], r[2], r[3], r[4], r[5], JSON.stringify(r[6]), r[7], i]);
   }
 }
 

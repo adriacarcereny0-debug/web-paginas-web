@@ -9,6 +9,14 @@ export type SiteInfo = {
   phone: string;
   whatsapp: string;
   address: string;
+  street: string;
+  locality: string;
+  region: string;
+  postalCode: string;
+  country: string;
+  areaServed: string;
+  priceRange: string;
+  foundingYear: string;
   schedule: string;
   social: { label: string; url: string }[];
   currency: string;
@@ -23,6 +31,10 @@ export type Seo = {
   siteUrl: string;
   twitter: string;
   indexable: boolean;
+  googleVerification: string;
+  bingVerification: string;
+  servicesIndexTitle: string;
+  servicesIndexDescription: string;
 };
 
 export type Hero = {
@@ -79,6 +91,14 @@ export const DEFAULTS = {
     phone: "+34 623 41 27 96",
     whatsapp: "+34623412796",
     address: "Barcelona, España",
+    street: "",
+    locality: "Barcelona",
+    region: "Cataluña",
+    postalCode: "",
+    country: "ES",
+    areaServed: "España",
+    priceRange: "€€",
+    foundingYear: "",
     schedule: "Lunes a viernes, 9:00 - 18:00",
     social: [
       { label: "LinkedIn", url: "https://linkedin.com" },
@@ -97,6 +117,11 @@ export const DEFAULTS = {
     siteUrl: "https://web-paginas-web.vercel.app",
     twitter: "",
     indexable: true,
+    googleVerification: "",
+    bingVerification: "",
+    servicesIndexTitle: "Servicios de diseño y desarrollo web",
+    servicesIndexDescription:
+      "Web corporativa, landing page, tienda online, rediseño y mantenimiento. Precios orientativos y plazos claros para cada servicio.",
   } satisfies Seo,
 
   hero: {
@@ -199,7 +224,7 @@ export const DEFAULTS = {
         title: "Navegación",
         links: [
           { label: "Inicio", href: "/#inicio" },
-          { label: "Servicios", href: "/#servicios" },
+          { label: "Servicios", href: "/servicios" },
           { label: "Cómo trabajamos", href: "/#proceso" },
           { label: "Portfolio", href: "/#portfolio" },
           { label: "Reseñas", href: "/#resenas" },
@@ -209,11 +234,11 @@ export const DEFAULTS = {
       {
         title: "Servicios",
         links: [
-          { label: "Web corporativa", href: "/#servicios" },
-          { label: "Landing page", href: "/#servicios" },
-          { label: "Tienda online", href: "/#servicios" },
-          { label: "Rediseño web", href: "/#servicios" },
-          { label: "Mantenimiento", href: "/#servicios" },
+          { label: "Web corporativa", href: "/servicios/web-corporativa" },
+          { label: "Landing page", href: "/servicios/landing-page" },
+          { label: "Tienda online", href: "/servicios/tienda-online" },
+          { label: "Rediseño web", href: "/servicios/rediseno-web" },
+          { label: "Mantenimiento", href: "/servicios/mantenimiento" },
         ],
       },
     ],

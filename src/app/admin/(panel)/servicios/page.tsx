@@ -17,6 +17,30 @@ export default function ServiciosPage() {
         { name: "icon", label: "Icono", type: "icon" },
         { name: "price_from", label: "Precio desde (interno)", type: "number", help: "Solo informativo para tu control." },
         { name: "features", label: "Características incluidas", type: "list", placeholder: "Añade los puntos que se listan en la tarjeta." },
+        {
+          name: "slug",
+          label: "Dirección de la página",
+          type: "text",
+          help: "Crea la página /servicios/lo-que-escribas. Sin acentos ni espacios. Déjalo vacío para no publicar página propia.",
+        },
+        {
+          name: "body",
+          label: "Texto de la página del servicio",
+          type: "textarea",
+          help: "Es el contenido que lee Google. Separa los párrafos con una línea en blanco. Cuanto más concreto y útil, mejor posiciona.",
+        },
+        {
+          name: "meta_title",
+          label: "Título para Google (opcional)",
+          type: "text",
+          help: "Lo ideal, entre 50 y 60 caracteres. Si lo dejas vacío se usa el título del servicio.",
+        },
+        {
+          name: "meta_description",
+          label: "Descripción para Google (opcional)",
+          type: "textarea",
+          help: "Entre 120 y 160 caracteres. Es el texto que aparece bajo el título en los resultados de búsqueda.",
+        },
         { name: "image", label: "Imagen (opcional)", type: "image", help: "Si añades imagen, sustituye al icono." },
         { name: "visible", label: "Visible en la web", type: "bool", help: "Mostrar este servicio" },
       ]}
@@ -28,6 +52,11 @@ export default function ServiciosPage() {
           <div className="min-w-0">
             <p className="font-semibold text-navy-900">{String(row.title)}</p>
             <p className="line-clamp-1 text-sm text-slate-500">{String(row.description || "")}</p>
+            {row.slug ? (
+              <p className="mt-0.5 font-mono text-[11px] text-brand-600">/servicios/{String(row.slug)}</p>
+            ) : (
+              <p className="mt-0.5 text-[11px] text-amber-600">Sin página propia (rellena la dirección para crearla)</p>
+            )}
             {row.price_label ? (
               <span className="mt-1 inline-block rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600">
                 {String(row.price_label)}

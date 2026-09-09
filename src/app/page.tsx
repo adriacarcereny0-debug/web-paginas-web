@@ -1,15 +1,16 @@
-import { query } from "@/lib/db";
+import { getFaqs, getProjects, getReviews, getServices, getTestimonials } from "@/lib/queries";
+import { businessSchema, faqSchema, jsonLd, siteOrigin } from "@/lib/seo";
 import { getContent } from "@/lib/content";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { Hero } from "@/components/site/Hero";
 import { Trust } from "@/components/site/Trust";
-import { Services, type ServiceRow } from "@/components/site/Services";
+import { Services } from "@/components/site/Services";
 import { Steps } from "@/components/site/Steps";
-import { Portfolio, type ProjectRow } from "@/components/site/Portfolio";
-import { Testimonials, type TestimonialRow } from "@/components/site/Testimonials";
-import { Reviews, type ReviewRow } from "@/components/site/Reviews";
-import { Faq, type FaqRow } from "@/components/site/Faq";
+import { Portfolio } from "@/components/site/Portfolio";
+import { Testimonials } from "@/components/site/Testimonials";
+import { Reviews } from "@/components/site/Reviews";
+import { Faq } from "@/components/site/Faq";
 import { FinalCta } from "@/components/site/FinalCta";
 import { Contact } from "@/components/site/Contact";
 import { WhatsAppButton } from "@/components/site/WhatsAppButton";
@@ -18,11 +19,11 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const [services, projects, testimonials, reviews, faqs] = await Promise.all([
-    query<ServiceRow>("SELECT * FROM services WHERE visible = 1 ORDER BY sort_order, id"),
-    query<ProjectRow>("SELECT * FROM projects WHERE visible = 1 ORDER BY sort_order, id"),
-    query<TestimonialRow>("SELECT * FROM testimonials WHERE visible = 1 ORDER BY sort_order, id"),
-    query<ReviewRow>("SELECT * FROM reviews WHERE visible = 1 ORDER BY featured DESC, sort_order, id"),
-    query<FaqRow>("SELECT * FROM faqs WHERE visible = 1 ORDER BY sort_order, id"),
+    getServices(),
+    getProjects(),
+    getTestimonials(),
+    getReviews(),
+    getFaqs(),
   ]);
 
   const [
@@ -68,42 +69,42 @@ export default async function HomePage() {
         }
       : undefined;
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "ProfessionalService",
-        "@id": `${seo.siteUrl}#business`,
-        name: site.brandName,
-        description: seo.description,
-        url: seo.siteUrl,
-        email: site.email || undefined,
-        telephone: site.phone || undefined,
-        address: site.address ? { "@type": "PostalAddress", addressLocality: site.address } : undefined,
-        areaServed: "ES",
-        serviceType: services.map((s) => s.title),
-        aggregateRating,
-      },
-      {
-        "@type": "FAQPage",
-        mainEntity: faqs.map((f) => ({
-          "@type": "Question",
-          name: f.question,
-          acceptedAnswer: { "@type": "Answer", text: f.answer },
-        })),
-      },
-      {
-        "@type": "WebSite",
-        url: seo.siteUrl,
-        name: site.brandName,
-        inLanguage: "es-ES",
-      },
-    ],
-  };
+  const schema = jsonLd([
+    businessSchema({
+      site,
+      seo,
+      services: services.map((s) => s.title),
+      aggregateRating,
+    }),
+    {
+      "@type": "WebSite",
+      "@id": `${siteOrigin(seo)}/#website`,
+      url: siteOrigin(seo),
+      name: site.brandName,
+      description: seo.description,
+      inLanguage: "es-ES",
+      publisher: { "@id": `${siteOrigin(seo)}/#business` },
+    },
+    faqSchema(faqs),
+    services.some((s) => s.slug)
+      ? {
+          "@type": "ItemList",
+          name: "Servicios",
+          itemListElement: services
+            .filter((s) => s.slug)
+            .map((s, i) => ({
+              "@type": "ListItem",
+              position: i + 1,
+              name: s.title,
+              url: `${siteOrigin(seo)}/servicios/${s.slug}`,
+            })),
+        }
+      : undefined,
+  ]);
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: schema }} />
       <Header brandName={site.brandName} initials={site.brandInitials} logo={site.logo} />
       <main id="contenido">
         <Hero content={hero} />

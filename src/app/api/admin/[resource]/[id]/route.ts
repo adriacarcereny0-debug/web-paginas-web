@@ -2,6 +2,7 @@ import { execute, queryOne } from "@/lib/db";
 import { RESOURCES, coerce } from "@/lib/resources";
 import { fail, ok, readJson } from "@/lib/api";
 import { getSession } from "@/lib/auth";
+import { revalidateResource } from "@/lib/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -51,6 +52,7 @@ export async function PATCH(req: Request, { params }: Ctx) {
       [...vals, Number(id)],
     );
     if (!row) return fail("Registro no encontrado", 404);
+    revalidateResource(resource);
     return ok({ row });
   } catch (err) {
     return fail(err instanceof Error ? err.message : "No se ha podido guardar", 400);
@@ -66,5 +68,6 @@ export async function DELETE(_req: Request, { params }: Ctx) {
 
   const changes = await execute(`DELETE FROM ${def.table} WHERE id = ?`, [Number(id)]);
   if (changes === 0) return fail("Registro no encontrado", 404);
+  revalidateResource(resource);
   return ok({ deleted: true });
 }

@@ -2,6 +2,7 @@ import { transaction } from "@/lib/db";
 import { RESOURCES } from "@/lib/resources";
 import { fail, ok, readJson } from "@/lib/api";
 import { getSession } from "@/lib/auth";
+import { revalidateResource } from "@/lib/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -21,5 +22,6 @@ export async function POST(req: Request) {
     }
   });
 
+  revalidateResource(String(body.resource));
   return ok({ updated: ids.length });
 }

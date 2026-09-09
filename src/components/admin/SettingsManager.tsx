@@ -40,6 +40,40 @@ export function SettingsManager({ user }: { user: { name: string; email: string 
             </div>
           </Section>
 
+          <Section
+            title="Datos para búsquedas locales"
+            description="Se publican como datos estructurados para Google. Deja vacío lo que no quieras hacer público: solo se envía lo que rellenes."
+          >
+            <TextField label="Calle y número" value={value.street} onChange={(v) => update((c) => ({ ...c, street: v }))} />
+            <TextField label="Código postal" value={value.postalCode} onChange={(v) => update((c) => ({ ...c, postalCode: v }))} />
+            <TextField label="Ciudad" value={value.locality} onChange={(v) => update((c) => ({ ...c, locality: v }))} />
+            <TextField label="Provincia o comunidad" value={value.region} onChange={(v) => update((c) => ({ ...c, region: v }))} />
+            <TextField
+              label="País"
+              value={value.country}
+              onChange={(v) => update((c) => ({ ...c, country: v }))}
+              help="Código de dos letras. ES para España."
+            />
+            <TextField
+              label="Zona en la que trabajáis"
+              value={value.areaServed}
+              onChange={(v) => update((c) => ({ ...c, areaServed: v }))}
+              help="Por ejemplo: España, Cataluña o Girona y alrededores."
+            />
+            <TextField
+              label="Rango de precios"
+              value={value.priceRange}
+              onChange={(v) => update((c) => ({ ...c, priceRange: v }))}
+              help="Notación de Google: €, €€ o €€€."
+            />
+            <TextField
+              label="Año de inicio"
+              value={value.foundingYear}
+              onChange={(v) => update((c) => ({ ...c, foundingYear: v }))}
+              help="Opcional. Por ejemplo: 2024."
+            />
+          </Section>
+
           <Section title="Datos de contacto" description="Se muestran en el footer y en la sección de contacto.">
             <TextField label="Email" value={value.email} onChange={(v) => update((c) => ({ ...c, email: v }))} />
             <TextField label="Teléfono" value={value.phone} onChange={(v) => update((c) => ({ ...c, phone: v }))} />

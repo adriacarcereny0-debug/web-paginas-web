@@ -73,6 +73,44 @@ export function SeoManager() {
             </div>
           </Section>
 
+          <Section
+            title="Verificación en buscadores"
+            description="Necesarios para dar de alta la web en Google Search Console y Bing y poder enviar el sitemap."
+          >
+            <TextField
+              label="Código de verificación de Google"
+              value={value.googleVerification}
+              onChange={(v) => update((c) => ({ ...c, googleVerification: v }))}
+              wide
+              help='En Search Console elige "Etiqueta HTML" y pega solo el valor del atributo content.'
+            />
+            <TextField
+              label="Código de verificación de Bing"
+              value={value.bingVerification}
+              onChange={(v) => update((c) => ({ ...c, bingVerification: v }))}
+              wide
+              help="Opcional. Valor de la etiqueta msvalidate.01."
+            />
+          </Section>
+
+          <Section
+            title="Página de servicios"
+            description="Textos de /servicios. Cada servicio con dirección propia genera además su propia página."
+          >
+            <TextField
+              label="Título"
+              value={value.servicesIndexTitle}
+              onChange={(v) => update((c) => ({ ...c, servicesIndexTitle: v }))}
+              wide
+            />
+            <TextArea
+              label="Descripción"
+              value={value.servicesIndexDescription}
+              onChange={(v) => update((c) => ({ ...c, servicesIndexDescription: v }))}
+              rows={3}
+            />
+          </Section>
+
           <Section title="Vista previa en Google">
             <div className="sm:col-span-2 rounded-xl border border-slate-200 p-4">
               <p className="text-xs text-slate-500">{value.siteUrl.replace(/^https?:\/\//, "")}</p>
@@ -80,8 +118,10 @@ export function SeoManager() {
               <p className="mt-1 text-sm text-slate-600">{value.description || "Descripción de tu web"}</p>
             </div>
             <div className="sm:col-span-2 rounded-xl bg-slate-50 p-4 text-xs text-slate-500">
-              El sitemap se genera automáticamente en <code className="font-mono">/sitemap.xml</code> y el archivo de robots en{" "}
-              <code className="font-mono">/robots.txt</code>. La portada incluye datos estructurados de negocio y de FAQ.
+              El sitemap se genera automáticamente en <code className="font-mono">/sitemap.xml</code> (incluye la portada,
+              la página de servicios, cada servicio con dirección propia y las páginas legales) y el archivo de robots en{" "}
+              <code className="font-mono">/robots.txt</code>. Las páginas incluyen datos estructurados de negocio, servicios,
+              preguntas frecuentes y ruta de navegación. La imagen social se genera sola si no subes una.
             </div>
           </Section>
 

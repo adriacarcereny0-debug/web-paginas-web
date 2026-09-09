@@ -7,6 +7,7 @@ import type { SectionCopy } from "@/lib/content";
 
 export type ServiceRow = {
   id: number;
+  slug: string;
   title: string;
   description: string;
   icon: string;
@@ -21,6 +22,15 @@ export function Services({ copy, services }: { copy: SectionCopy; services: Serv
     <section id="servicios" className="scroll-mt-24 bg-white py-20 lg:py-28">
       <div className="container-x">
         <SectionHeader eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.subtitle} />
+
+        {services.some((s) => s.slug) && (
+          <div className="mt-8 flex justify-center">
+            <Link href="/servicios" className="btn-secondary btn-sm">
+              Ver todos los servicios en detalle
+              <Icon name="arrow" size={15} />
+            </Link>
+          </div>
+        )}
 
         {services.length === 0 ? (
           <p className="mt-12 rounded-2xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-500">
@@ -70,10 +80,11 @@ export function Services({ copy, services }: { copy: SectionCopy; services: Serv
                     <div className="relative mt-6 flex items-center justify-between border-t border-slate-100 pt-5">
                       <span className="text-sm font-semibold text-navy-900">{s.price_label || "Consultar"}</span>
                       <Link
-                        href="/presupuesto"
+                        href={s.slug ? `/servicios/${s.slug}` : "/presupuesto"}
                         className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 transition group-hover:gap-2.5"
+                        aria-label={s.slug ? `Ver el servicio ${s.title}` : `Calcular presupuesto de ${s.title}`}
                       >
-                        Calcular <Icon name="arrow" size={15} />
+                        {s.slug ? "Ver detalle" : "Calcular"} <Icon name="arrow" size={15} />
                       </Link>
                     </div>
                   </article>

@@ -105,7 +105,7 @@ export default async function HomePage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: schema }} />
-      <Header brandName={site.brandName} initials={site.brandInitials} logo={site.logo} />
+      <Header brandName={site.brandName} initials={site.brandInitials} logo={site.logo} logoLayout={site.logoLayout} />
       <main id="contenido">
         <Hero content={hero} />
         <Trust content={trust} />

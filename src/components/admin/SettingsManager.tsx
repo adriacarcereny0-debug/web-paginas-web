@@ -27,12 +27,30 @@ export function SettingsManager({ user }: { user: { name: string; email: string 
             />
             <TextField label="Lema" value={value.tagline} onChange={(v) => update((c) => ({ ...c, tagline: v }))} wide />
             <div className="sm:col-span-2">
+              <label className="label" htmlFor="logo-layout">
+                Cómo mostrar el logotipo
+              </label>
+              <select
+                id="logo-layout"
+                className="field"
+                value={value.logoLayout}
+                onChange={(e) => update((c) => ({ ...c, logoLayout: e.target.value as SiteInfo["logoLayout"] }))}
+              >
+                <option value="con-nombre">Imagen + nombre (para logos cuadrados o solo el símbolo)</option>
+                <option value="solo">Solo la imagen (para logos horizontales que ya llevan el texto)</option>
+              </select>
+              <p className="help">
+                Si tu logotipo es cuadrado y lleva el texto debajo, en la cabecera se vería muy pequeño: sube solo el
+                símbolo y deja esta opción en «imagen + nombre».
+              </p>
+            </div>
+            <div className="sm:col-span-2">
               <FieldInput
                 field={{
                   name: "logo",
                   label: "Logotipo (opcional)",
                   type: "image",
-                  help: "Sustituye al cuadrado azul con las iniciales en la cabecera y el pie. PNG o SVG con fondo transparente, alto mínimo 72 px.",
+                  help: "Sustituye al cuadrado azul con las iniciales en la cabecera, el pie y el documento de presupuesto. PNG o SVG con fondo transparente, alto mínimo 72 px. Recorta el espacio en blanco de alrededor para que no se vea pequeño.",
                 }}
                 value={value.logo}
                 onChange={(v) => update((c) => ({ ...c, logo: String(v) }))}

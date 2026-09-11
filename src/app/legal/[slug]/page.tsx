@@ -32,7 +32,7 @@ export default async function LegalPage({ params }: Params) {
 
   return (
     <>
-      <Header brandName={site.brandName} initials={site.brandInitials} logo={site.logo} />
+      <Header brandName={site.brandName} initials={site.brandInitials} logo={site.logo} logoLayout={site.logoLayout} />
       <main className="bg-white pt-[72px]">
         <div className="container-x max-w-3xl py-16 lg:py-20">
           <Link href="/" className="text-sm font-medium text-brand-600 hover:underline">

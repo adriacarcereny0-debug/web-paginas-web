@@ -41,6 +41,10 @@ export function QuoteDocument({
       {/* Cabecera */}
       <header className="grid gap-6 sm:grid-cols-[1fr_1.15fr] sm:items-start">
         <div>
+          {site.logo && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={site.logo} alt={legalName} className="mb-3 h-12 w-auto object-contain" />
+          )}
           <h1 className="font-display text-[34px] font-extrabold leading-none tracking-[-0.02em] sm:text-[42px]">
             PRESUPUESTO
           </h1>

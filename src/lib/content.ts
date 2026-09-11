@@ -4,6 +4,7 @@ export type SiteInfo = {
   brandName: string;
   brandInitials: string;
   logo: string;
+  logoLayout: "solo" | "con-nombre";
   tagline: string;
   email: string;
   phone: string;
@@ -101,6 +102,7 @@ export const DEFAULTS = {
     brandName: "Webora Studio",
     brandInitials: "W",
     logo: "",
+    logoLayout: "con-nombre",
     tagline: "Estudio de diseño y desarrollo web",
     email: "adriacarcereny0@gmail.com",
     phone: "+34 623 41 27 96",

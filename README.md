@@ -287,12 +287,17 @@ también se puede sustituir por tu propia numeración.
 Todas las imágenes se suben desde **Media** en el panel (o desde el botón «Elegir imagen» de
 cada formulario) y se optimizan solas a WebP. Se pueden usar en:
 
-- **Logotipo** (Configuración): sustituye al cuadrado con las iniciales en la cabecera y el pie.
+- **Logotipo** (Configuración): sustituye al cuadrado con las iniciales en la cabecera, el pie y
+  el documento de presupuesto. La opción *Cómo mostrar el logotipo* decide si se muestra solo la
+  imagen (logos horizontales que ya llevan el texto) o la imagen junto al nombre (logos cuadrados
+  o solo el símbolo). Si el logotipo es cuadrado con el texto debajo, sube solo el símbolo: a la
+  altura de la cabecera el texto quedaría ilegible.
 - **Imagen principal del hero** (Contenido → Hero): sustituye a la composición gráfica.
 - **Servicios**: si añades imagen, sustituye al icono de la tarjeta.
 - **Portfolio**: la captura de cada proyecto.
 - **Reseñas y testimonios**: la foto del cliente.
-- **SEO**: imagen social (1200×630) y favicon.
+- **SEO**: imagen social (1200×630) y favicon. Para el favicon sube solo el símbolo, cuadrado:
+  se ve a 16 píxeles. Si no subes ninguno se usa `public/icono.svg`, el icono de la marca.
 
 ## Integraciones opcionales
 

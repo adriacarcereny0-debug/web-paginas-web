@@ -66,7 +66,12 @@ export function SeoManager() {
             </div>
             <div className="sm:col-span-2">
               <FieldInput
-                field={{ name: "favicon", label: "Favicon", type: "image", help: "PNG o ICO cuadrado, idealmente 512×512." }}
+                field={{
+                  name: "favicon",
+                  label: "Favicon (icono de la pestaña)",
+                  type: "image",
+                  help: "Sube solo el símbolo, sin el texto: se ve a 16 píxeles y las letras no se leerían. Cuadrado, PNG o SVG, idealmente 512×512. Si lo dejas vacío se usa el icono de la marca.",
+                }}
                 value={value.favicon}
                 onChange={(v) => update((c) => ({ ...c, favicon: String(v) }))}
               />

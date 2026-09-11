@@ -46,7 +46,13 @@ export async function generateMetadata(): Promise<Metadata> {
       other: seo.bingVerification ? { "msvalidate.01": seo.bingVerification } : undefined,
     },
     alternates: { canonical: "/", languages: { "es-ES": "/" } },
-    icons: seo.favicon ? { icon: seo.favicon, apple: seo.favicon } : undefined,
+    // Un único origen para el icono: el que se sube desde el panel manda, y si no
+    // hay ninguno se usa el de la marca. Así nunca compiten dos iconos distintos.
+    icons: {
+      icon: seo.favicon || "/icono.svg",
+      shortcut: seo.favicon || "/icono.svg",
+      apple: seo.favicon || "/icono.svg",
+    },
     openGraph: {
       type: "website",
       locale: "es_ES",

@@ -15,7 +15,17 @@ const NAV = [
   { label: "Contacto", href: "/#contacto" },
 ];
 
-export function Header({ brandName, initials, logo = "" }: { brandName: string; initials: string; logo?: string }) {
+export function Header({
+  brandName,
+  initials,
+  logo = "",
+  logoLayout = "con-nombre",
+}: {
+  brandName: string;
+  initials: string;
+  logo?: string;
+  logoLayout?: "solo" | "con-nombre";
+}) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -61,7 +71,19 @@ export function Header({ brandName, initials, logo = "" }: { brandName: string; 
       <div className="container-x flex h-[72px] items-center justify-between gap-4">
         <Link href="/#inicio" className="flex items-center gap-2.5" onClick={() => setOpen(false)}>
           {logo ? (
-            <Image src={logo} alt={brandName} width={140} height={36} className="h-9 w-auto object-contain" priority />
+            <>
+              <Image
+                src={logo}
+                alt={brandName}
+                width={200}
+                height={48}
+                priority
+                className="h-11 w-auto max-w-[190px] object-contain"
+              />
+              {logoLayout === "con-nombre" && (
+                <span className="font-display text-[17px] font-bold tracking-tight text-navy-900">{brandName}</span>
+              )}
+            </>
           ) : (
             <>
               <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-brand-600 to-brand-800 text-sm font-bold text-white shadow-[0_8px_20px_-8px_rgba(37,99,235,.9)]">

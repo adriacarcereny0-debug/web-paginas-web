@@ -96,7 +96,7 @@ export default async function ServicioPage({ params }: Params) {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: schema }} />
-      <Header brandName={site.brandName} initials={site.brandInitials} logo={site.logo} />
+      <Header brandName={site.brandName} initials={site.brandInitials} logo={site.logo} logoLayout={site.logoLayout} />
 
       <main className="bg-white pt-[72px]">
         <div className="border-b border-slate-100 bg-mist">

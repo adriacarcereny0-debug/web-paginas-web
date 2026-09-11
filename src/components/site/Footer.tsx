@@ -12,7 +12,18 @@ export function Footer({ site, footer }: { site: SiteInfo; footer: FooterContent
           <div>
             <div className="flex items-center gap-2.5">
               {site.logo ? (
-                <Image src={site.logo} alt={site.brandName} width={150} height={36} className="h-9 w-auto object-contain" />
+                <>
+                  <Image
+                    src={site.logo}
+                    alt={site.brandName}
+                    width={200}
+                    height={48}
+                    className="h-11 w-auto max-w-[190px] object-contain"
+                  />
+                  {site.logoLayout === "con-nombre" && (
+                    <span className="font-display text-[17px] font-bold text-white">{site.brandName}</span>
+                  )}
+                </>
               ) : (
                 <>
                   <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-sm font-bold text-white">

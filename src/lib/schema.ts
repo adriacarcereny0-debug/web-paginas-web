@@ -92,6 +92,7 @@ export async function runMigrations(client: PoolClient) {
 
   CREATE TABLE IF NOT EXISTS calc_groups (
     id SERIAL PRIMARY KEY,
+    calculator TEXT NOT NULL DEFAULT 'web',
     key TEXT NOT NULL UNIQUE,
     title TEXT NOT NULL,
     subtitle TEXT NOT NULL DEFAULT '',
@@ -153,6 +154,7 @@ export async function runMigrations(client: PoolClient) {
     days_max INTEGER NOT NULL DEFAULT 0,
     status TEXT NOT NULL DEFAULT 'borrador',
     notes TEXT NOT NULL DEFAULT '',
+    calculator TEXT NOT NULL DEFAULT 'web',
     final_amount DOUBLE PRECISION NOT NULL DEFAULT 0,
     doc_reference TEXT NOT NULL DEFAULT '',
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -200,6 +202,10 @@ export async function runMigrations(client: PoolClient) {
   ALTER TABLE services ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
   ALTER TABLE quotes ADD COLUMN IF NOT EXISTS final_amount DOUBLE PRECISION NOT NULL DEFAULT 0;
   ALTER TABLE quotes ADD COLUMN IF NOT EXISTS doc_reference TEXT NOT NULL DEFAULT '';
+  -- Cada paso del configurador pertenece a un presupuesto distinto (web, chatbot...).
+  ALTER TABLE calc_groups ADD COLUMN IF NOT EXISTS calculator TEXT NOT NULL DEFAULT 'web';
+  ALTER TABLE quotes ADD COLUMN IF NOT EXISTS calculator TEXT NOT NULL DEFAULT 'web';
+  CREATE INDEX IF NOT EXISTS idx_calc_groups_calculator ON calc_groups(calculator, sort_order);
   CREATE UNIQUE INDEX IF NOT EXISTS idx_services_slug ON services(slug) WHERE slug <> '';
   `);
 }

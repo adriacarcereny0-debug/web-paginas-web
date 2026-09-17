@@ -19,6 +19,8 @@ const paths: Record<string, React.ReactNode> = {
   mail: <><rect x="2.8" y="4.8" width="18.4" height="14.4" rx="2.5" /><path d="m3.5 7 8.5 6 8.5-6" /></>,
   phone: <path d="M6.5 3.5h3l1.5 4-2 1.5a12 12 0 0 0 6 6l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.5 5.7a2 2 0 0 1 2-2.2Z" />,
   whatsapp: <path d="M20 11.7A8 8 0 0 1 8.2 18.8L4 20l1.3-4.1A8 8 0 1 1 20 11.7Z" />,
+  message: <path d="M21 12a8 8 0 0 1-8 8H4l2-3.2A8 8 0 1 1 21 12Z" />,
+  bot: <><rect x="4" y="8" width="16" height="12" rx="3" /><path d="M12 4.5V8M8.5 13h.01M15.5 13h.01M9.5 16.5h5" /><circle cx="12" cy="3.5" r="1.2" /></>,
   pin: <><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z" /><circle cx="12" cy="10" r="2.6" /></>,
   clock: <><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" /></>,
   star: <path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8L3.5 9.7l5.9-.9L12 3.5Z" />,

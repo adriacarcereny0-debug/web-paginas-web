@@ -40,6 +40,12 @@ export async function seedIfEmpty(db: PoolClient) {
   if ((await count("testimonials")) === 0) await seedTestimonials(db);
   if ((await count("reviews")) === 0) await seedReviews(db);
   if ((await count("calc_groups")) === 0) await seedCalculator(db);
+
+  // Estas siembras se comprueban por separado para que también se apliquen sobre
+  // bases de datos que ya existían antes de añadir el presupuesto de chatbots.
+  const chatbotSteps = await db.query("SELECT 1 FROM calc_groups WHERE calculator = 'chatbot' LIMIT 1");
+  if (chatbotSteps.rows.length === 0) await seedChatbotCalculator(db);
+  await seedChatbotServices(db);
 }
 
 export async function seedServices(db: PoolClient) {
@@ -208,6 +214,157 @@ export async function seedReviews(db: PoolClient) {
   }
 }
 
+/** Servicios de chatbot. Solo se insertan si no existen ya por su dirección. */
+export async function seedChatbotServices(db: PoolClient) {
+  const rows: [string, string, string, string, number, string, string[], string][] = [
+    [
+      "Chatbot para WhatsApp Business",
+      "chatbot-whatsapp",
+      "Atiende, filtra y agenda por WhatsApp a cualquier hora, sin que tengas que estar tú.",
+      "whatsapp",
+      450,
+      "Desde 450 €",
+      ["Respuestas automáticas 24/7", "Captación de datos del cliente", "Agenda de citas", "Aviso a tu móvil"],
+      "La mayoría de negocios pierde clientes por no contestar a tiempo. Un chatbot en WhatsApp Business responde al instante, a cualquier hora, y filtra lo que de verdad necesita tu atención.\n\nConfiguramos el bot con la información real de tu negocio: horarios, servicios, precios, ubicación y las preguntas que más te repiten. Puede recoger los datos del cliente, agendar una cita, enviar tu catálogo o pasarte la conversación a ti cuando el caso lo merece.\n\nSe conecta con lo que ya usas —tu calendario, tu hoja de cálculo o tu CRM— para que los contactos queden registrados sin copiar nada a mano. Y siempre queda la opción de hablar con una persona: el bot filtra, no bloquea.",
+    ],
+    [
+      "Chatbot para tu página web",
+      "chatbot-web",
+      "Un asistente en tu web que resuelve dudas y convierte visitas en contactos.",
+      "message",
+      400,
+      "Desde 400 €",
+      ["Respuestas con la información de tu web", "Captación de contactos", "Derivación a WhatsApp", "Informes de uso"],
+      "Quien entra en tu web y no encuentra rápido lo que busca, se va. Un chatbot bien puesto responde en el momento, resuelve la duda y recoge el contacto antes de que se marche.\n\nSe entrena con la información de tu propio negocio —tus servicios, tus precios, tus condiciones— para que responda con criterio y no invente. Cuando la conversación se pone seria, recoge los datos o la deriva directamente a tu WhatsApp.\n\nIncluye panel para ver las conversaciones y las preguntas más repetidas, que suele ser la mejor fuente de ideas para mejorar la web y la oferta.",
+    ],
+  ];
+
+  const maxOrder = await db.query("SELECT COALESCE(MAX(sort_order), -1) + 1 AS n FROM services");
+  let order = Number(maxOrder.rows[0].n);
+
+  for (const r of rows) {
+    const exists = await db.query("SELECT 1 FROM services WHERE slug = $1 LIMIT 1", [r[1]]);
+    if (exists.rows.length > 0) continue;
+    await db.query(
+      "INSERT INTO services (title, slug, description, icon, price_from, price_label, features, body, sort_order) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)",
+      [r[0], r[1], r[2], r[3], r[4], r[5], JSON.stringify(r[6]), r[7], order++],
+    );
+  }
+}
+
+export async function seedChatbotCalculator(db: PoolClient) {
+  const groups: {
+    key: string;
+    title: string;
+    subtitle: string;
+    type: "single" | "multi";
+    required: number;
+    options: [string, string, number, string, number][];
+  }[] = [
+    {
+      key: "cb-canal",
+      title: "¿Dónde quieres el chatbot?",
+      subtitle: "Puedes empezar por un canal y ampliar más adelante.",
+      type: "single",
+      required: 1,
+      options: [
+        ["WhatsApp Business", "El canal donde ya te escriben tus clientes.", 450, "fixed", 6],
+        ["En mi página web", "Un asistente en la esquina de tu web.", 400, "fixed", 5],
+        ["Instagram y Facebook", "Responde los mensajes directos de tus redes.", 420, "fixed", 6],
+        ["WhatsApp y web a la vez", "Las mismas respuestas en los dos canales.", 700, "fixed", 9],
+        ["Aún no lo sé", "Lo decidimos juntos según tu negocio.", 450, "fixed", 6],
+      ],
+    },
+    {
+      key: "cb-funciones",
+      title: "¿Qué quieres que haga?",
+      subtitle: "Selecciona todo lo que te encaje. Puedes empezar por poco.",
+      type: "multi",
+      required: 0,
+      options: [
+        ["Responder preguntas frecuentes", "Horarios, precios, ubicación, condiciones...", 120, "fixed", 1],
+        ["Captar datos del cliente", "Nombre, teléfono y qué necesita, guardados automáticamente.", 180, "fixed", 2],
+        ["Agendar citas o reservas", "Con disponibilidad real de tu calendario.", 390, "fixed", 5],
+        ["Enviar catálogo o presupuesto", "Manda precios o el PDF al momento.", 220, "fixed", 3],
+        ["Tomar pedidos", "Pedidos sencillos por chat, con confirmación.", 480, "fixed", 6],
+        ["Consultar el estado de un pedido", "El cliente pregunta y el bot responde solo.", 300, "fixed", 4],
+        ["Pasar la conversación a una persona", "Cuando el caso lo merece, te avisa a ti.", 140, "fixed", 2],
+        ["Recuperar conversaciones paradas", "Reactiva a quien se quedó a medias.", 260, "fixed", 3],
+        ["Pedir reseñas después del servicio", "Mensaje automático para pedir la valoración.", 160, "fixed", 2],
+      ],
+    },
+    {
+      key: "cb-inteligencia",
+      title: "¿Cómo de listo tiene que ser?",
+      subtitle: "De un menú de botones a un asistente que entiende lo que le escriben.",
+      type: "single",
+      required: 1,
+      options: [
+        ["Menú de opciones", "El cliente elige entre botones. Sencillo y muy fiable.", 0.8, "multiplier", 0],
+        ["Respuestas por palabras clave", "Detecta lo que preguntan y responde.", 1, "multiplier", 1],
+        ["Inteligencia artificial con tu información", "Entiende lenguaje natural y responde con los datos de tu negocio.", 1.45, "multiplier", 5],
+        ["Inteligencia artificial que además actúa", "Consulta tu agenda o tu sistema y hace gestiones.", 1.9, "multiplier", 10],
+      ],
+    },
+    {
+      key: "cb-integraciones",
+      title: "¿Con qué se tiene que conectar?",
+      subtitle: "Para que los datos lleguen solos a donde ya trabajas.",
+      type: "multi",
+      required: 0,
+      options: [
+        ["Hoja de cálculo", "Cada contacto, una fila en tu Excel o Google Sheets.", 120, "fixed", 1],
+        ["Tu calendario", "Google Calendar, Outlook o similar.", 260, "fixed", 3],
+        ["Tu CRM", "Los contactos entran directamente en tu CRM.", 340, "fixed", 4],
+        ["Tu tienda online", "Consulta productos, stock o pedidos.", 420, "fixed", 5],
+        ["Cobros online", "Enlace de pago dentro de la conversación.", 380, "fixed", 4],
+        ["Aviso por email", "Te llega un correo con cada conversación.", 90, "fixed", 1],
+        ["Ninguna por ahora", "El bot funciona por su cuenta.", 0, "fixed", 0],
+      ],
+    },
+    {
+      key: "cb-idiomas",
+      title: "¿En cuántos idiomas?",
+      subtitle: "El bot detecta el idioma del cliente y responde igual.",
+      type: "single",
+      required: 1,
+      options: [
+        ["Solo uno", "Castellano, catalán, inglés... el que uses.", 0, "fixed", 0],
+        ["Dos idiomas", "Por ejemplo castellano e inglés.", 220, "fixed", 2],
+        ["Tres o más", "Para negocios con clientela internacional.", 420, "fixed", 4],
+      ],
+    },
+    {
+      key: "cb-mantenimiento",
+      title: "¿Quieres que nos ocupemos del día a día?",
+      subtitle: "Un chatbot mejora con el uso: cada mes se afinan las respuestas.",
+      type: "multi",
+      required: 0,
+      options: [
+        ["Mantenimiento y soporte", "Que siga funcionando y responder a incidencias.", 60, "monthly", 0],
+        ["Mejora continua de respuestas", "Revisamos conversaciones reales y afinamos el bot.", 90, "monthly", 0],
+        ["Informe mensual", "Cuántas conversaciones, qué preguntan y cuántos contactos.", 40, "monthly", 0],
+        ["Alojamiento del chatbot", "Nos encargamos del servidor y las actualizaciones.", 35, "monthly", 0],
+        ["Formación para tu equipo", "Una sesión para que sepáis manejarlo.", 150, "fixed", 1],
+      ],
+    },
+  ];
+
+  for (const [gi, g] of groups.entries()) {
+    const res = await db.query(
+      "INSERT INTO calc_groups (calculator, key, title, subtitle, type, required, sort_order) VALUES ('chatbot',$1,$2,$3,$4,$5,$6) RETURNING id",
+      [g.key, g.title, g.subtitle, g.type, g.required, gi],
+    );
+    const groupId = res.rows[0].id;
+    for (const [oi, o] of g.options.entries()) {
+      await db.query(
+        "INSERT INTO calc_options (group_id, label, description, price, price_type, days, sort_order) VALUES ($1,$2,$3,$4,$5,$6,$7)",
+        [groupId, o[0], o[1], o[2], o[3], o[4], oi],
+      );
+    }
+  }
+}
+
 export async function seedCalculator(db: PoolClient) {
   const groups: {
     key: string;
@@ -300,7 +457,7 @@ export async function seedCalculator(db: PoolClient) {
 
   for (const [gi, g] of groups.entries()) {
     const res = await db.query(
-      "INSERT INTO calc_groups (key, title, subtitle, type, required, sort_order) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id",
+      "INSERT INTO calc_groups (calculator, key, title, subtitle, type, required, sort_order) VALUES ('web',$1,$2,$3,$4,$5,$6) RETURNING id",
       [g.key, g.title, g.subtitle, g.type, g.required, gi],
     );
     const groupId = res.rows[0].id;

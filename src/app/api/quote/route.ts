@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { z } from "zod";
 import { transaction } from "@/lib/db";
-import { computeQuote, getCalculatorConfig, type Selections } from "@/lib/pricing";
+import { computeQuote, getCalculatorConfig, getCalculatorDef, type Selections } from "@/lib/pricing";
 import { clean, emailSchema, fail, nameSchema, ok, phoneSchema, readJson, zodErrors } from "@/lib/api";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 
@@ -16,6 +16,7 @@ const schema = z.object({
   city: z.string().trim().max(120).optional().default(""),
   businessType: z.string().trim().max(120).optional().default(""),
   consent: z.literal(true, { errorMap: () => ({ message: "Debes aceptar la política de privacidad" }) }),
+  calculator: z.string().trim().max(40).optional().default("web"),
   website: z.string().max(0).optional().default(""), // honeypot
   selections: z.record(z.string(), z.array(z.number().int().positive()).max(40)),
 });
@@ -29,8 +30,13 @@ export async function POST(req: Request) {
   const data = parsed.data;
   if (data.website) return fail("Solicitud no válida", 400);
 
-  const groups = await getCalculatorConfig();
-  const result = await computeQuote(data.selections as Selections, groups);
+  const def = await getCalculatorDef(data.calculator);
+  if (!def || !def.enabled) return fail("Ese tipo de presupuesto no está disponible", 400);
+
+  const groups = await getCalculatorConfig(def.key);
+  if (groups.length === 0) return fail("Ese presupuesto no tiene pasos configurados", 400);
+
+  const result = await computeQuote(data.selections as Selections, groups, def);
   if (!result.valid) return fail(result.errors[0] || "Faltan opciones por seleccionar", 400);
 
   const email = data.email.toLowerCase();
@@ -81,11 +87,12 @@ export async function POST(req: Request) {
     }
 
     await tx.execute(
-      `INSERT INTO quotes (public_id, lead_id, selections, summary, project_type, price_min, price_max, monthly,
-        days_min, days_max, status) VALUES (?,?,?,?,?,?,?,?,?,?, 'borrador')`,
+      `INSERT INTO quotes (public_id, lead_id, calculator, selections, summary, project_type, price_min, price_max,
+        monthly, days_min, days_max, status) VALUES (?,?,?,?,?,?,?,?,?,?,?, 'borrador')`,
       [
         publicId,
         leadId,
+        def.key,
         JSON.stringify(data.selections),
         JSON.stringify(result.summary),
         result.projectType,
@@ -100,6 +107,8 @@ export async function POST(req: Request) {
 
   return ok({
     publicId,
+    calculator: def.key,
+    calculatorName: def.name,
     priceMin: result.priceMin,
     priceMax: result.priceMax,
     monthly: result.monthly,

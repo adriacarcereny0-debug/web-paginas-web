@@ -291,6 +291,35 @@ export const DEFAULTS = {
     showBankDetails: false,
   } satisfies CompanyInfo,
 
+  /** Presupuestos disponibles. Cada uno tiene sus propios pasos y sus propios precios. */
+  calculators: [
+    {
+      key: "web",
+      name: "Página web",
+      description: "Web corporativa, landing, tienda online o rediseño.",
+      icon: "layout",
+      enabled: true,
+      basePrice: 0,
+      baseDays: 5,
+      minPrice: 300,
+      rangeMargin: 0.15,
+      resultNote: "",
+    },
+    {
+      key: "chatbot",
+      name: "Chatbot",
+      description: "Para WhatsApp Business o para tu página web.",
+      icon: "whatsapp",
+      enabled: true,
+      basePrice: 0,
+      baseDays: 3,
+      minPrice: 250,
+      rangeMargin: 0.15,
+      resultNote:
+        "El coste de los mensajes o conversaciones que cobra WhatsApp a partir de cierto volumen no está incluido: se paga directamente a Meta según su tarifa.",
+    },
+  ] satisfies CalculatorDef[],
+
   calculator: {
     enabled: true,
     basePrice: 0,
@@ -304,6 +333,19 @@ export const DEFAULTS = {
       "Esta estimación es orientativa y se confirma tras una llamada de 15 minutos en la que revisamos los detalles de tu proyecto.",
     discounts: [] as { minItems: number; percent: number; label: string }[],
   },
+};
+
+export type CalculatorDef = {
+  key: string;
+  name: string;
+  description: string;
+  icon: string;
+  enabled: boolean;
+  basePrice: number;
+  baseDays: number;
+  minPrice: number;
+  rangeMargin: number;
+  resultNote: string;
 };
 
 export type ContentKey = keyof typeof DEFAULTS;

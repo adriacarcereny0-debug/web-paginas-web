@@ -25,7 +25,8 @@ captura de leads, gestión comercial y un CMS propio para editar toda la web sin
 - Hero con composición visual propia (sin imágenes de stock, todo CSS/SVG).
 - Sección de confianza, servicios, proceso en 4 pasos, portfolio filtrable,
   testimonios, reseñas con nota media, FAQ con acordeón, CTA final y contacto.
-- Creador de presupuestos tipo wizard con captura de datos antes de mostrar la estimación.
+- Creador de presupuestos tipo wizard, con varios presupuestos (páginas web y chatbots para
+  WhatsApp Business o para la web) y captura de datos antes de mostrar la estimación.
 - Resultado de presupuesto con resumen, importe, plazo y solicitud en un clic.
 - Documento de presupuesto descargable en PDF con formato de presupuesto formal:
   datos fiscales, cliente, concepto detallado, base imponible, IVA, total, condiciones
@@ -43,7 +44,7 @@ captura de leads, gestión comercial y un CMS propio para editar toda la web sin
 | Presupuestos | Listado con búsqueda y filtros, detalle con las opciones elegidas, importe final, referencia, enlace al documento, notas y estados. |
 | Mensajes | Bandeja de entrada con estados (nuevo, leído, respondido, archivado). |
 | Servicios | CRUD completo con orden, visibilidad, iconos, precios e imágenes. |
-| Calculadora | Precios, reglas, descuentos, pasos y opciones. Nada está escrito en el código. |
+| Calculadora | Presupuestos disponibles (web, chatbot…), precios, reglas, descuentos, pasos y opciones. Nada está escrito en el código. |
 | Portfolio | CRUD de proyectos con imagen, categoría, tecnologías, enlace y marca DEMO. |
 | Reseñas | CRUD de reseñas con valoración, servicio, ciudad, origen, foto, destacadas y marca DEMO. La web calcula sola la nota media y el reparto de estrellas. |
 | Testimonios | CRUD con valoración, foto y marca DEMO. |
@@ -104,7 +105,12 @@ contraseña. Después borra `ADMIN_PASSWORD_RESET` y despliega de nuevo.
 
 ## Cómo funciona el creador de presupuestos
 
-1. El visitante recorre los pasos configurados en **Calculadora → Pasos**.
+Hay **varios presupuestos** configurables (de serie, *Página web* y *Chatbot*), cada uno con sus
+propios pasos y sus propios precios de partida. Si hay más de uno activo, la web pregunta primero
+qué se quiere presupuestar; con uno solo, entra directo. Se gestionan en **Calculadora →
+Presupuestos**, y los pasos y opciones de cada uno en las pestañas siguientes.
+
+1. El visitante elige qué presupuestar y recorre los pasos de ese presupuesto.
 2. Antes de ver ningún importe debe dejar sus datos y aceptar la política de privacidad.
 3. El servidor calcula el precio (el navegador nunca recibe los precios de las opciones,
    así que la estimación no se puede manipular desde el cliente).

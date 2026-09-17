@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { CrudManager, type Row } from "./CrudManager";
+import { CrudManager, FieldInput, type Row } from "./CrudManager";
 import { PageHeader, Card } from "./ui";
 import { RepeaterList, SaveBar, Section, TextArea, TextField, Toggle, useSettings } from "./SettingsForm";
 import { formatMoney } from "@/lib/utils";
@@ -18,7 +18,20 @@ type CalcSettings = {
   discounts: { minItems: number; percent: number; label: string }[];
 };
 
-type Group = { id: number; key: string; title: string; type: string; visible: number };
+type Group = { id: number; key: string; title: string; type: string; visible: number; calculator: string };
+
+type CalculatorDef = {
+  key: string;
+  name: string;
+  description: string;
+  icon: string;
+  enabled: boolean;
+  basePrice: number;
+  baseDays: number;
+  minPrice: number;
+  rangeMargin: number;
+  resultNote: string;
+};
 
 const PRICE_TYPES = [
   { value: "fixed", label: "Importe fijo (se suma)" },
@@ -28,21 +41,30 @@ const PRICE_TYPES = [
 
 export function CalculatorManager() {
   const { value, update, save, reset, saving, dirty } = useSettings<CalcSettings>("calculator");
+  const defs = useSettings<CalculatorDef[]>("calculators");
   const [groups, setGroups] = useState<Group[]>([]);
   const [activeGroup, setActiveGroup] = useState<number | null>(null);
-  const [tab, setTab] = useState<"precios" | "pasos" | "opciones">("precios");
+  const [activeCalc, setActiveCalc] = useState("web");
+  const [tab, setTab] = useState<"presupuestos" | "precios" | "pasos" | "opciones">("presupuestos");
+
+  const calcGroups = groups.filter((g) => (g.calculator || "web") === activeCalc);
 
   async function loadGroups() {
-    const res = await fetch("/api/admin/calc_groups?perPage=100");
+    const res = await fetch("/api/admin/calc_groups?perPage=200");
     if (!res.ok) return;
     const json = await res.json();
     setGroups(json.rows);
-    setActiveGroup((g) => g ?? json.rows[0]?.id ?? null);
   }
 
   useEffect(() => {
     loadGroups();
   }, []);
+
+  // Al cambiar de presupuesto, el paso seleccionado deja de ser válido.
+  useEffect(() => {
+    const first = groups.find((g) => (g.calculator || "web") === activeCalc);
+    setActiveGroup(first?.id ?? null);
+  }, [activeCalc, groups]);
 
   return (
     <>
@@ -54,7 +76,8 @@ export function CalculatorManager() {
       <div className="mb-5 flex gap-1 rounded-xl border border-slate-200 bg-white p-1">
         {(
           [
-            ["precios", "Precios y reglas"],
+            ["presupuestos", "Presupuestos"],
+            ["precios", "Reglas comunes"],
             ["pasos", "Pasos"],
             ["opciones", "Opciones y precios"],
           ] as const
@@ -71,6 +94,81 @@ export function CalculatorManager() {
           </button>
         ))}
       </div>
+
+      {tab === "presupuestos" && (
+        <>
+          {!defs.value ? (
+            <div className="h-64 animate-pulse rounded-xl bg-slate-100" />
+          ) : (
+            <div className="space-y-5">
+              <Section
+                title="Presupuestos disponibles"
+                description="Cada uno tiene sus propios pasos y su propio precio de partida. Si hay más de uno activo, la web pregunta al visitante cuál quiere antes de empezar."
+              >
+                <RepeaterList
+                  label="Presupuestos"
+                  items={defs.value}
+                  onChange={(items) => defs.update(() => items)}
+                  empty="Sin presupuestos configurados."
+                  create={() => ({
+                    key: "nuevo",
+                    name: "Nuevo presupuesto",
+                    description: "",
+                    icon: "layout",
+                    enabled: true,
+                    basePrice: 0,
+                    baseDays: 3,
+                    minPrice: 200,
+                    rangeMargin: 0.15,
+                    resultNote: "",
+                  })}
+                  render={(item, patch) => (
+                    <>
+                      <TextField label="Nombre" value={item.name} onChange={(v) => patch({ name: v })} />
+                      <TextField
+                        label="Clave interna"
+                        value={item.key}
+                        onChange={(v) => patch({ key: v })}
+                        help="Sin espacios. Es la que enlaza con los pasos."
+                      />
+                      <TextArea label="Descripción" value={item.description} onChange={(v) => patch({ description: v })} rows={2} />
+                      <TextField label="Precio base" type="number" value={item.basePrice} onChange={(v) => patch({ basePrice: Number(v) })} />
+                      <TextField label="Precio mínimo" type="number" value={item.minPrice} onChange={(v) => patch({ minPrice: Number(v) })} />
+                      <TextField label="Días base" type="number" value={item.baseDays} onChange={(v) => patch({ baseDays: Number(v) })} />
+                      <TextField
+                        label="Margen del rango (0-1)"
+                        type="number"
+                        value={item.rangeMargin}
+                        onChange={(v) => patch({ rangeMargin: Number(v) })}
+                      />
+                      <TextArea
+                        label="Nota bajo el resultado"
+                        value={item.resultNote}
+                        onChange={(v) => patch({ resultNote: v })}
+                        rows={2}
+                      />
+                      <div className="sm:col-span-2">
+                        <FieldInput
+                          field={{ name: "icon", label: "Icono", type: "icon" }}
+                          value={item.icon}
+                          onChange={(v: unknown) => patch({ icon: String(v) })}
+                        />
+                      </div>
+                      <Toggle
+                        label="Activo"
+                        checked={item.enabled}
+                        onChange={(v) => patch({ enabled: v })}
+                        help="Si lo desactivas deja de ofrecerse en la web."
+                      />
+                    </>
+                  )}
+                />
+              </Section>
+              <SaveBar saving={defs.saving} dirty={defs.dirty} onSave={defs.save} onReset={defs.reset} />
+            </div>
+          )}
+        </>
+      )}
 
       {tab === "precios" && (
         <>
@@ -170,9 +268,34 @@ export function CalculatorManager() {
         </>
       )}
 
+      {(tab === "pasos" || tab === "opciones") && defs.value && defs.value.length > 1 && (
+        <Card className="mb-4 p-4">
+          <p className="mb-2 text-sm font-semibold text-navy-900">Presupuesto que estás editando</p>
+          <div className="flex flex-wrap gap-2">
+            {defs.value.map((d) => (
+              <button
+                key={d.key}
+                type="button"
+                onClick={() => setActiveCalc(d.key)}
+                className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition ${
+                  activeCalc === d.key
+                    ? "border-brand-600 bg-brand-50 text-brand-700"
+                    : "border-slate-200 text-slate-600 hover:border-slate-300"
+                }`}
+              >
+                {d.name}
+              </button>
+            ))}
+          </div>
+        </Card>
+      )}
+
       {tab === "pasos" && (
         <CrudManager
+          key={activeCalc}
           resource="calc_groups"
+          extraQuery={`&calculator=${activeCalc}`}
+          defaults={{ calculator: activeCalc }}
           title="Pasos del configurador"
           description="Cada paso es una pregunta del wizard. El orden aquí es el orden en el que se muestran."
           itemLabel="Paso"
@@ -181,7 +304,8 @@ export function CalculatorManager() {
           fields={[
             { name: "title", label: "Pregunta", type: "text", required: true, colSpan: 2 },
             { name: "subtitle", label: "Texto de ayuda", type: "textarea" },
-            { name: "key", label: "Clave interna", type: "text", required: true, help: "Sin espacios. Ej: funcionalidades" },
+            { name: "key", label: "Clave interna", type: "text", required: true, help: "Sin espacios y distinta de cualquier otra. Ej: funcionalidades" },
+            { name: "calculator", label: "Presupuesto", type: "text", hideInForm: true },
             {
               name: "type",
               label: "Tipo de selección",
@@ -211,8 +335,10 @@ export function CalculatorManager() {
           <Card className="mb-4 p-4">
             <p className="mb-2 text-sm font-semibold text-navy-900">Paso</p>
             <div className="flex flex-wrap gap-2">
-              {groups.length === 0 && <p className="text-sm text-slate-500">Crea primero un paso en la pestaña “Pasos”.</p>}
-              {groups.map((g) => (
+              {calcGroups.length === 0 && (
+                <p className="text-sm text-slate-500">Crea primero un paso en la pestaña “Pasos”.</p>
+              )}
+              {calcGroups.map((g) => (
                 <button
                   key={g.id}
                   type="button"

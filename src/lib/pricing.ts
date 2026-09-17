@@ -1,5 +1,5 @@
 import { query } from "./db";
-import { getContent } from "./content";
+import { getContent, type CalculatorDef } from "./content";
 
 export type CalcOption = {
   id: number;
@@ -16,6 +16,7 @@ export type CalcOption = {
 
 export type CalcGroup = {
   id: number;
+  calculator: string;
   key: string;
   title: string;
   subtitle: string;
@@ -26,16 +27,30 @@ export type CalcGroup = {
   options: CalcOption[];
 };
 
-export async function getCalculatorConfig(includeHidden = false): Promise<CalcGroup[]> {
+/** Pasos de un presupuesto concreto. Sin `calculator` devuelve los de todos. */
+export async function getCalculatorConfig(calculator?: string, includeHidden = false): Promise<CalcGroup[]> {
+  const where: string[] = [];
+  const args: unknown[] = [];
+  if (!includeHidden) where.push("visible = 1");
+  if (calculator) {
+    where.push("calculator = ?");
+    args.push(calculator);
+  }
+  const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
+
   const [groups, options] = await Promise.all([
-    query<Omit<CalcGroup, "options">>(
-      `SELECT * FROM calc_groups ${includeHidden ? "" : "WHERE visible = 1"} ORDER BY sort_order, id`,
-    ),
+    query<Omit<CalcGroup, "options">>(`SELECT * FROM calc_groups ${whereSql} ORDER BY sort_order, id`, args),
     query<CalcOption>(
       `SELECT * FROM calc_options ${includeHidden ? "" : "WHERE visible = 1"} ORDER BY sort_order, id`,
     ),
   ]);
   return groups.map((g) => ({ ...g, options: options.filter((o) => o.group_id === g.id) }));
+}
+
+/** Definición de un presupuesto, con sus precios propios. */
+export async function getCalculatorDef(key: string): Promise<CalculatorDef | undefined> {
+  const list = await getContent("calculators");
+  return list.find((c) => c.key === key);
 }
 
 export type Selections = Record<string, number[]>; // group key -> option ids
@@ -58,8 +73,21 @@ export type QuoteResult = {
  * Single source of truth for pricing. Used by the API (authoritative) and,
  * with the same config payload, by the client for the live preview.
  */
-export async function computeQuote(selections: Selections, groups: CalcGroup[]): Promise<QuoteResult> {
-  const cfg = await getContent("calculator");
+export async function computeQuote(
+  selections: Selections,
+  groups: CalcGroup[],
+  def?: CalculatorDef,
+): Promise<QuoteResult> {
+  const global = await getContent("calculator");
+  // Los importes de partida salen del presupuesto concreto; el resto de reglas
+  // (moneda, descuentos) son comunes a todos.
+  const cfg = {
+    ...global,
+    basePrice: def ? def.basePrice : global.basePrice,
+    baseDays: def ? def.baseDays : global.baseDays,
+    minPrice: def ? def.minPrice : global.minPrice,
+    rangeMargin: def ? def.rangeMargin : global.rangeMargin,
+  };
   const errors: string[] = [];
   let base = Number(cfg.basePrice) || 0;
   let monthly = 0;

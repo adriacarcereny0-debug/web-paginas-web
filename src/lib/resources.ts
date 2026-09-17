@@ -130,6 +130,7 @@ export const RESOURCES: Record<string, ResourceDef> = {
   calc_groups: {
     table: "calc_groups",
     fields: [
+      { name: "calculator", type: "text", max: 40, default: "web" },
       { name: "key", type: "text", required: true, max: 40 },
       { name: "title", type: "text", required: true, max: 200 },
       { name: "subtitle", type: "text", max: 400 },
@@ -139,7 +140,7 @@ export const RESOURCES: Record<string, ResourceDef> = {
       visible,
     ],
     searchable: ["title", "key"],
-    filterable: ["visible"],
+    filterable: ["visible", "calculator"],
     sortable: ["sort_order"],
     defaultOrder: "sort_order ASC, id ASC",
     allowCreate: true,

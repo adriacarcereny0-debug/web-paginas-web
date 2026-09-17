@@ -6,15 +6,25 @@ import { QuoteResult } from "./QuoteResult";
 
 type Option = { id: number; label: string; description: string; icon: string };
 type Group = { key: string; title: string; subtitle: string; type: "single" | "multi"; required: boolean; options: Option[] };
+type Calculator = {
+  key: string;
+  name: string;
+  description: string;
+  icon: string;
+  resultNote: string;
+  groups: Group[];
+};
 type Config = {
   enabled: boolean;
   leadGateTitle: string;
   leadGateSubtitle: string;
   resultNote: string;
-  groups: Group[];
+  calculators: Calculator[];
 };
 export type QuoteResponse = {
   publicId: string;
+  calculator?: string;
+  calculatorName?: string;
   priceMin: number;
   priceMax: number;
   monthly: number;
@@ -62,6 +72,7 @@ const BUSINESS_TYPES = [
 export function QuoteWizard() {
   const [config, setConfig] = useState<Config | null>(null);
   const [loadError, setLoadError] = useState("");
+  const [calculatorKey, setCalculatorKey] = useState<string | null>(null);
   const [step, setStep] = useState(0);
   const [selections, setSelections] = useState<Record<string, number[]>>({});
   const [lead, setLead] = useState<Lead>({
@@ -103,15 +114,25 @@ export function QuoteWizard() {
     };
   }, []);
 
+  // Con un solo presupuesto disponible no se pregunta: se entra directo.
+  useEffect(() => {
+    if (!calculatorKey && config?.calculators.length === 1) setCalculatorKey(config.calculators[0].key);
+  }, [config, calculatorKey]);
+
   useEffect(() => {
     try {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ selections, lead: { ...lead, consent: false } }));
+      sessionStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ selections, calculatorKey, lead: { ...lead, consent: false } }),
+      );
     } catch {
       /* modo privado */
     }
-  }, [selections, lead]);
+  }, [selections, calculatorKey, lead]);
 
-  const groups = config?.groups ?? [];
+  const calculators = config?.calculators ?? [];
+  const calculator = calculators.find((c) => c.key === calculatorKey) ?? null;
+  const groups = calculator?.groups ?? [];
   const totalSteps = groups.length + 1; // + datos de contacto
   const isLeadStep = step === groups.length;
   const progress = result ? 100 : Math.round((step / totalSteps) * 100);
@@ -148,6 +169,12 @@ export function QuoteWizard() {
   }
 
   function back() {
+    if (step === 0 && calculators.length > 1) {
+      setCalculatorKey(null);
+      setSelections({});
+      scrollTop();
+      return;
+    }
     setStep((s) => Math.max(0, s - 1));
     scrollTop();
   }
@@ -176,7 +203,7 @@ export function QuoteWizard() {
       const res = await fetch("/api/quote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...lead, selections }),
+        body: JSON.stringify({ ...lead, selections, calculator: calculatorKey }),
       });
       const json = await res.json();
       if (!res.ok) {
@@ -219,7 +246,7 @@ export function QuoteWizard() {
     return (
       <QuoteResult
         result={result}
-        note={config.resultNote}
+        note={calculator?.resultNote || config.resultNote}
         onModify={() => {
           setResult(null);
           setStep(0);
@@ -229,16 +256,88 @@ export function QuoteWizard() {
     );
   }
 
+  // Paso previo: qué se quiere presupuestar. Con un solo presupuesto activo se
+  // selecciona solo y el paso no llega a mostrarse.
+  if (!calculator) {
+    if (calculators.length === 1) return <WizardSkeleton />;
+    if (calculators.length === 0) {
+      return (
+        <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center">
+          <h2 className="font-display text-xl font-bold text-navy-900">El configurador está en preparación</h2>
+          <p className="mt-2 text-sm text-slate-600">Escríbenos y preparamos tu presupuesto personalmente.</p>
+          <Link href="/#contacto" className="btn-primary mt-6">
+            Hablar con nosotros
+          </Link>
+        </div>
+      );
+    }
+    return (
+      <div className="animate-fade-up">
+        <p className="text-sm font-semibold text-navy-900">Paso 1</p>
+        <h2 className="mt-2 font-display text-2xl font-bold tracking-tight text-navy-900 sm:text-3xl">
+          ¿Qué quieres presupuestar?
+        </h2>
+        <p className="mt-2 text-[15px] text-slate-600">Elige por dónde empezamos. Después podrás pedir el otro.</p>
+
+        <div className="mt-7 grid gap-3 sm:grid-cols-2">
+          {calculators.map((c) => (
+            <button
+              key={c.key}
+              type="button"
+              onClick={() => {
+                setCalculatorKey(c.key);
+                setSelections({});
+                setStep(0);
+                scrollTop();
+              }}
+              className="group flex items-start gap-4 rounded-2xl border border-slate-200 bg-white p-5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-400 hover:shadow-card"
+            >
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-600 transition-colors group-hover:bg-brand-600 group-hover:text-white">
+                <Icon name={c.icon} size={24} />
+              </span>
+              <span className="min-w-0">
+                <span className="block font-display text-lg font-bold text-navy-900">{c.name}</span>
+                <span className="mt-1 block text-sm leading-relaxed text-slate-600">{c.description}</span>
+                <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 transition-all group-hover:gap-2.5">
+                  Empezar <Icon name="arrow" size={15} />
+                </span>
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   const group = groups[step];
 
   return (
     <div>
       <div className="mb-8">
-        <div className="mb-3 flex items-center justify-between text-sm">
+        <div className="mb-3 flex items-center justify-between gap-3 text-sm">
           <span className="font-semibold text-navy-900">
             Paso {step + 1} de {totalSteps}
+            {calculators.length > 1 && (
+              <span className="ml-2 font-normal text-slate-500">· {calculator.name}</span>
+            )}
           </span>
-          <span className="text-slate-500">{progress}% completado</span>
+          <span className="flex items-center gap-3">
+            {calculators.length > 1 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setCalculatorKey(null);
+                  setSelections({});
+                  setStep(0);
+                  scrollTop();
+                }}
+                className="text-slate-500 underline-offset-2 hover:text-brand-600 hover:underline"
+              >
+                Cambiar
+              </button>
+            )}
+            <span className="text-slate-500">{progress}% completado</span>
+          </span>
         </div>
         <div className="h-1.5 overflow-hidden rounded-full bg-slate-200">
           <div
@@ -328,7 +427,12 @@ export function QuoteWizard() {
               )}
 
               <div className="mt-8 flex items-center justify-between gap-3 border-t border-slate-100 pt-6">
-                <button type="button" onClick={back} disabled={step === 0} className="btn-ghost">
+                <button
+                  type="button"
+                  onClick={back}
+                  disabled={step === 0 && calculators.length <= 1}
+                  className="btn-ghost"
+                >
                   <Icon name="chevron" size={16} className="rotate-180" /> Atrás
                 </button>
                 <button type="button" onClick={next} disabled={!canContinue} className="btn-primary group">

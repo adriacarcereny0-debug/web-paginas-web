@@ -17,27 +17,35 @@ export type ServiceRow = {
   features: string;
 };
 
+/**
+ * Índice de servicios en forma de listado: una fila por servicio, separadas por
+ * filetes. Sustituye a la cuadrícula de tarjetas idénticas.
+ */
 export function Services({ copy, services }: { copy: SectionCopy; services: ServiceRow[] }) {
   return (
-    <section id="servicios" className="scroll-mt-24 bg-white py-20 lg:py-28">
+    <section id="servicios" className="section scroll-mt-24 bg-white">
       <div className="container-x">
-        <SectionHeader eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.subtitle} />
-
-        {services.some((s) => s.slug) && (
-          <div className="mt-8 flex justify-center">
-            <Link href="/servicios" className="btn-secondary btn-sm">
-              Ver todos los servicios en detalle
-              <Icon name="arrow" size={15} />
-            </Link>
-          </div>
-        )}
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <SectionHeader index="02" eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.subtitle} />
+          {services.some((s) => s.slug) && (
+            <Reveal delay={140}>
+              <Link
+                href="/servicios"
+                className="link-underline inline-flex items-center gap-2 pb-1 text-sm font-medium text-navy-900"
+              >
+                Ver todos en detalle
+                <Icon name="arrow" size={15} />
+              </Link>
+            </Reveal>
+          )}
+        </div>
 
         {services.length === 0 ? (
-          <p className="mt-12 rounded-2xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-500">
+          <p className="mt-12 border-t border-line pt-10 text-sm text-navy-400">
             Todavía no hay servicios publicados. Añádelos desde el panel de administración.
           </p>
         ) : (
-          <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-14 border-t border-line-strong">
             {services.map((s, i) => {
               let features: string[] = [];
               try {
@@ -45,53 +53,57 @@ export function Services({ copy, services }: { copy: SectionCopy; services: Serv
               } catch {
                 features = [];
               }
+              const href = s.slug ? `/servicios/${s.slug}` : "/presupuesto";
               return (
-                <Reveal key={s.id} delay={(i % 3) * 70}>
-                  <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-7 transition-all duration-300 hover:-translate-y-1.5 hover:border-brand-200 hover:shadow-card">
-                    <div
-                      aria-hidden
-                      className="pointer-events-none absolute inset-x-0 -top-24 h-40 bg-gradient-to-b from-brand-100/70 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-                    />
-                    {s.image ? (
-                      <div className="relative mb-5 h-36 w-full overflow-hidden rounded-xl bg-slate-100">
-                        <Image src={s.image} alt={s.title} fill sizes="(max-width:768px) 100vw, 33vw" className="object-cover" loading="lazy" />
-                      </div>
-                    ) : (
-                      <span className="relative grid h-12 w-12 place-items-center rounded-xl bg-navy-900 text-white transition-transform duration-300 group-hover:scale-105">
-                        <Icon name={s.icon} size={22} />
-                      </span>
-                    )}
-                    <h3 className="relative mt-5 font-display text-xl font-bold text-navy-900">{s.title}</h3>
-                    <p className="relative mt-2.5 text-[15px] leading-relaxed text-slate-600">{s.description}</p>
+                <Reveal key={s.id} delay={Math.min(i, 4) * 50} as="li">
+                  <Link
+                    href={href}
+                    className="group grid gap-x-8 gap-y-4 border-b border-line py-8 transition-colors hover:bg-paper md:grid-cols-[3.5rem_minmax(0,1fr)_minmax(0,1.1fr)_auto] md:items-start md:px-4 md:-mx-4"
+                    aria-label={s.slug ? `Ver el servicio ${s.title}` : `Calcular presupuesto de ${s.title}`}
+                  >
+                    <span className="section-index pt-1.5">{String(i + 1).padStart(2, "0")}</span>
 
-                    {features.length > 0 && (
-                      <ul className="relative mt-5 space-y-2">
-                        {features.map((f) => (
-                          <li key={f} className="flex items-start gap-2 text-sm text-slate-600">
-                            <span className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-600">
-                              <Icon name="check" size={10} strokeWidth={3} />
-                            </span>
-                            {f}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-
-                    <div className="relative mt-6 flex items-center justify-between border-t border-slate-100 pt-5">
-                      <span className="text-sm font-semibold text-navy-900">{s.price_label || "Consultar"}</span>
-                      <Link
-                        href={s.slug ? `/servicios/${s.slug}` : "/presupuesto"}
-                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 transition group-hover:gap-2.5"
-                        aria-label={s.slug ? `Ver el servicio ${s.title}` : `Calcular presupuesto de ${s.title}`}
-                      >
-                        {s.slug ? "Ver detalle" : "Calcular"} <Icon name="arrow" size={15} />
-                      </Link>
+                    <div className="flex items-start gap-4">
+                      {s.image ? (
+                        <div className="relative h-14 w-20 shrink-0 overflow-hidden rounded-[6px] bg-mist">
+                          <Image
+                            src={s.image}
+                            alt=""
+                            fill
+                            sizes="80px"
+                            className="object-cover"
+                            loading="lazy"
+                          />
+                        </div>
+                      ) : (
+                        <Icon name={s.icon} size={20} className="mt-1 shrink-0 text-navy-400" />
+                      )}
+                      <h3 className="text-[1.35rem] leading-tight tracking-[-0.02em] text-navy-900 transition-colors group-hover:text-brand-700">
+                        {s.title}
+                      </h3>
                     </div>
-                  </article>
+
+                    <div>
+                      <p className="text-[15px] leading-[1.65] text-navy-600">{s.description}</p>
+                      {features.length > 0 && (
+                        <p className="mt-3 text-[13px] leading-relaxed text-navy-400">{features.join(" · ")}</p>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-4 md:flex-col md:items-end md:gap-2 md:pt-1">
+                      <span className="tnum whitespace-nowrap text-sm font-semibold text-navy-900">
+                        {s.price_label || "Consultar"}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 text-sm text-brand-600 transition-all group-hover:gap-2.5">
+                        {s.slug ? "Ver detalle" : "Calcular"}
+                        <Icon name="arrow" size={14} />
+                      </span>
+                    </div>
+                  </Link>
                 </Reveal>
               );
             })}
-          </div>
+          </ul>
         )}
       </div>
     </section>

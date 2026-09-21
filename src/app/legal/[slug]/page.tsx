@@ -33,12 +33,12 @@ export default async function LegalPage({ params }: Params) {
   return (
     <>
       <Header brandName={site.brandName} initials={site.brandInitials} logo={site.logo} logoLayout={site.logoLayout} />
-      <main className="bg-white pt-[72px]">
+      <main className="bg-white pt-[var(--header-h)]">
         <div className="container-x max-w-3xl py-16 lg:py-20">
           <Link href="/" className="text-sm font-medium text-brand-600 hover:underline">
             ← Volver al inicio
           </Link>
-          <h1 className="mt-6 font-display text-4xl font-extrabold tracking-[-0.02em] text-navy-900">{entry.title}</h1>
+          <h1 className="mt-6 text-4xl font-semibold tracking-[-0.02em] text-navy-900">{entry.title}</h1>
           <div className="prose-legal mt-10">
             {blocks.map((b, i) => {
               if (b.type === "h2") return <h2 key={i}>{b.text}</h2>;

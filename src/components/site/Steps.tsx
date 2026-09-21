@@ -4,39 +4,39 @@ import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeader } from "./SectionHeader";
 import type { StepsSection } from "@/lib/content";
 
+/**
+ * Secuencia numerada sobre papel. Antes era una banda oscura con manchas de
+ * color difuminadas y tarjetas de cristal: el patrón más reconocible de
+ * plantilla generada automáticamente.
+ */
 export function Steps({ content }: { content: StepsSection }) {
   return (
-    <section id="proceso" className="relative scroll-mt-24 overflow-hidden bg-navy-900 py-20 lg:py-28">
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-24 top-10 h-80 w-80 rounded-full bg-brand-600/25 blur-[120px]" />
-        <div className="absolute bottom-0 right-0 h-72 w-72 rounded-full bg-sky-500/15 blur-[120px]" />
-      </div>
+    <section id="proceso" className="section scroll-mt-24 bg-paper">
+      <div className="container-x">
+        <SectionHeader index="03" eyebrow={content.eyebrow} title={content.title} subtitle={content.subtitle} />
 
-      <div className="container-x relative">
-        <SectionHeader eyebrow={content.eyebrow} title={content.title} subtitle={content.subtitle} light />
-
-        <ol className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+        <ol className="mt-14 grid gap-x-10 gap-y-10 md:grid-cols-2 lg:grid-cols-4">
           {content.steps.map((step, i) => (
-            <Reveal key={step.number} delay={i * 80} as="li">
-              <div className="relative h-full rounded-2xl border border-white/10 bg-white/[.04] p-7 backdrop-blur transition-all duration-300 hover:border-brand-400/40 hover:bg-white/[.07]">
-                <span className="font-display text-4xl font-extrabold tracking-tight text-brand-400/60">{step.number}</span>
-                <h3 className="mt-4 text-lg font-bold text-white">{step.title}</h3>
-                <p className="mt-2.5 text-sm leading-relaxed text-slate-400">{step.text}</p>
-                {i < content.steps.length - 1 && (
-                  <span aria-hidden className="absolute -right-3 top-12 hidden text-white/15 lg:block">
-                    <Icon name="chevron" size={22} />
-                  </span>
-                )}
+            <Reveal key={step.number} delay={i * 60} as="li">
+              <div className="border-t border-navy-900 pt-5">
+                <span className="tnum block text-[2.75rem] leading-none tracking-[-0.04em] text-line-strong">
+                  {step.number}
+                </span>
+                <h3 className="mt-5 text-[1.05rem] font-semibold text-navy-900">{step.title}</h3>
+                <p className="mt-2.5 text-sm leading-[1.65] text-navy-600">{step.text}</p>
               </div>
             </Reveal>
           ))}
         </ol>
 
-        <Reveal delay={200}>
-          <div className="mt-12 flex justify-center">
-            <Link href="/presupuesto" className="btn-primary group">
-              Empezar mi presupuesto
-              <Icon name="arrow" size={18} className="transition-transform group-hover:translate-x-1" />
+        <Reveal delay={180}>
+          <div className="mt-14 border-t border-line pt-8">
+            <Link
+              href="/presupuesto"
+              className="group inline-flex items-center gap-2 text-[15px] font-medium text-navy-900"
+            >
+              <span className="link-underline pb-0.5">Empezar mi presupuesto</span>
+              <Icon name="arrow" size={16} className="text-brand-600 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
         </Reveal>

@@ -65,10 +65,10 @@ export function Header({
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 print:hidden ${
-        scrolled ? "border-b border-slate-200/80 bg-white/85 backdrop-blur-xl" : "border-b border-transparent bg-white/0"
+        scrolled ? "border-b border-line bg-white/90 backdrop-blur-md" : "border-b border-transparent bg-white"
       }`}
     >
-      <div className="container-x flex h-[72px] items-center justify-between gap-4">
+      <div className="container-x flex h-[var(--header-h)] items-center justify-between gap-4">
         <Link href="/#inicio" className="flex items-center gap-2.5" onClick={() => setOpen(false)}>
           {logo ? (
             <>
@@ -78,35 +78,38 @@ export function Header({
                 width={200}
                 height={48}
                 priority
-                className="h-11 w-auto max-w-[190px] object-contain"
+                className="h-10 w-auto max-w-[180px] object-contain"
               />
               {logoLayout === "con-nombre" && (
-                <span className="font-display text-[17px] font-bold tracking-tight text-navy-900">{brandName}</span>
+                <span className="text-[16px] font-semibold tracking-[-0.01em] text-navy-900">{brandName}</span>
               )}
             </>
           ) : (
             <>
-              <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-brand-600 to-brand-800 text-sm font-bold text-white shadow-[0_8px_20px_-8px_rgba(37,99,235,.9)]">
+              <span className="grid h-8 w-8 place-items-center rounded-[5px] bg-navy-900 text-[13px] font-semibold text-white">
                 {initials || brandName.charAt(0)}
               </span>
-              <span className="font-display text-[17px] font-bold tracking-tight text-navy-900">{brandName}</span>
+              <span className="text-[16px] font-semibold tracking-[-0.01em] text-navy-900">{brandName}</span>
             </>
           )}
         </Link>
 
-        <nav className="hidden items-center gap-1 lg:flex" aria-label="Navegación principal">
+        <nav className="hidden items-center gap-7 lg:flex" aria-label="Navegación principal">
           {NAV.map((item) => {
             const id = item.href.split("#")[1] ?? "";
             // Fuera de la portada el elemento activo lo marca la ruta, no el scroll.
-            const isActive = isHome
-              ? active === id
-              : item.href !== "/#inicio" && pathname.startsWith(item.href.split("#")[0]);
+            const path = item.href.split("#")[0];
+            // Fuera de la portada solo se marca un enlace con ruta propia
+            // (/servicios); los anclas de la home no deben activarse nunca.
+            const isActive = isHome ? active === id : path !== "/" && pathname.startsWith(path);
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`rounded-full px-3 py-2 text-sm font-medium transition-colors ${
-                  isActive ? "bg-slate-100 text-navy-900" : "text-slate-600 hover:text-navy-900"
+                className={`relative py-1 text-sm transition-colors after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px after:bg-navy-900 after:transition-opacity ${
+                  isActive
+                    ? "font-medium text-navy-900 after:opacity-100"
+                    : "text-navy-600 after:opacity-0 hover:text-navy-900"
                 }`}
               >
                 {item.label}
@@ -125,7 +128,7 @@ export function Header({
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="grid h-10 w-10 place-items-center rounded-xl border border-slate-200 text-navy-800 lg:hidden"
+          className="grid h-10 w-10 place-items-center rounded-[6px] border border-line-strong text-navy-900 lg:hidden"
           aria-label={open ? "Cerrar menú" : "Abrir menú"}
           aria-expanded={open}
           aria-controls="mobile-menu"
@@ -140,7 +143,7 @@ export function Header({
         aria-hidden={!open}
       >
         <div
-          className={`fixed inset-x-0 top-[72px] bottom-0 origin-top bg-white transition-all duration-300 ${
+          className={`fixed inset-x-0 top-[var(--header-h)] bottom-0 origin-top bg-white transition-all duration-300 ${
             open ? "translate-y-0 opacity-100" : "-translate-y-3 opacity-0"
           }`}
         >
@@ -152,7 +155,7 @@ export function Header({
                   href={item.href}
                   onClick={() => setOpen(false)}
                   style={{ transitionDelay: `${open ? i * 35 : 0}ms` }}
-                  className={`border-b border-slate-100 py-4 text-lg font-semibold text-navy-900 transition-all duration-300 ${
+                  className={`border-b border-line py-4 text-lg font-medium text-navy-900 transition-all duration-300 ${
                     open ? "translate-x-0 opacity-100" : "translate-x-3 opacity-0"
                   }`}
                 >

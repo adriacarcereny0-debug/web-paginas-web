@@ -87,7 +87,7 @@ export default async function DocumentoPresupuesto({ params }: Params) {
   };
 
   return (
-    <main className="min-h-dvh bg-slate-100 py-8 print:bg-white print:py-0">
+    <main className="min-h-dvh bg-mist py-8 print:bg-white print:py-0">
       <PrintBar reference={data.reference} />
       <div className="mx-auto max-w-[860px] px-4 print:max-w-none print:px-0">
         <div className="overflow-hidden rounded-xl bg-white shadow-card print:rounded-none print:shadow-none">

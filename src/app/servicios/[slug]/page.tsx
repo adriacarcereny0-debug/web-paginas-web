@@ -98,26 +98,26 @@ export default async function ServicioPage({ params }: Params) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: schema }} />
       <Header brandName={site.brandName} initials={site.brandInitials} logo={site.logo} logoLayout={site.logoLayout} />
 
-      <main className="bg-white pt-[72px]">
-        <div className="border-b border-slate-100 bg-mist">
+      <main className="bg-white pt-[var(--header-h)]">
+        <div className="border-b border-line bg-mist">
           <div className="container-x grid gap-10 py-14 lg:grid-cols-[1.15fr_1fr] lg:items-center lg:py-20">
             <div>
-              <nav aria-label="Ruta de navegación" className="text-sm text-slate-500">
+              <nav aria-label="Ruta de navegación" className="text-sm text-navy-400">
                 <Link href="/" className="hover:text-brand-600">
                   Inicio
                 </Link>
-                <span className="mx-2 text-slate-300">/</span>
+                <span className="mx-2 text-line-strong">/</span>
                 <Link href="/servicios" className="hover:text-brand-600">
                   Servicios
                 </Link>
-                <span className="mx-2 text-slate-300">/</span>
+                <span className="mx-2 text-line-strong">/</span>
                 <span className="text-navy-900">{service.title}</span>
               </nav>
 
-              <h1 className="mt-5 font-display text-4xl font-extrabold tracking-[-0.02em] text-navy-900 sm:text-5xl sm:leading-[1.08]">
+              <h1 className="mt-5 text-4xl font-semibold tracking-[-0.02em] text-navy-900 sm:text-5xl sm:leading-[1.08]">
                 {service.title}
               </h1>
-              <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-slate-600">{service.description}</p>
+              <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-navy-600">{service.description}</p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <Link href="/presupuesto" className="btn-primary group">
@@ -138,7 +138,7 @@ export default async function ServicioPage({ params }: Params) {
 
             <div className="relative">
               {service.image ? (
-                <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-line bg-white">
                   <Image
                     src={service.image}
                     alt={service.title}
@@ -149,10 +149,8 @@ export default async function ServicioPage({ params }: Params) {
                   />
                 </div>
               ) : (
-                <div className="grid aspect-[4/3] place-items-center rounded-2xl border border-slate-200 bg-white">
-                  <span className="grid h-20 w-20 place-items-center rounded-2xl bg-brand-50 text-brand-600">
-                    <Icon name={service.icon} size={38} />
-                  </span>
+                <div className="grid aspect-[4/3] place-items-center rounded-[8px] border border-line bg-white">
+                  <Icon name={service.icon} size={34} className="text-line-strong" />
                 </div>
               )}
             </div>
@@ -161,10 +159,10 @@ export default async function ServicioPage({ params }: Params) {
 
         <article className="container-x grid gap-12 py-16 lg:grid-cols-[1.4fr_1fr] lg:py-20">
           <div>
-            <h2 className="font-display text-2xl font-bold text-navy-900">Qué incluye este servicio</h2>
+            <h2 className="text-2xl font-semibold text-navy-900">Qué incluye este servicio</h2>
             <div className="mt-5 space-y-4">
               {paragraphs.map((p, i) => (
-                <p key={i} className="text-[16px] leading-relaxed text-slate-600">
+                <p key={i} className="text-[16px] leading-relaxed text-navy-600">
                   {p}
                 </p>
               ))}
@@ -173,11 +171,9 @@ export default async function ServicioPage({ params }: Params) {
             {features.length > 0 && (
               <ul className="mt-8 grid gap-3 sm:grid-cols-2">
                 {features.map((f) => (
-                  <li key={f} className="flex items-start gap-3 rounded-xl border border-slate-200 p-4">
-                    <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-600">
-                      <Icon name="check" size={12} strokeWidth={3} />
-                    </span>
-                    <span className="text-sm text-slate-700">{f}</span>
+                  <li className="flex items-start gap-3 border-t border-line py-3.5" key={f}>
+                    <Icon name="check" size={14} strokeWidth={2.4} className="mt-0.5 shrink-0 text-brand-600" />
+                    <span className="text-sm text-navy-700">{f}</span>
                   </li>
                 ))}
               </ul>
@@ -185,9 +181,9 @@ export default async function ServicioPage({ params }: Params) {
           </div>
 
           <aside className="lg:pl-4">
-            <div className="sticky top-24 rounded-2xl border border-slate-200 bg-mist p-6">
-              <h2 className="font-display text-lg font-bold text-navy-900">¿Cuánto costaría tu proyecto?</h2>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600">
+            <div className="sticky top-24 rounded-[8px] border border-line bg-paper p-6">
+              <h2 className="text-lg font-semibold text-navy-900">¿Cuánto costaría tu proyecto?</h2>
+              <p className="mt-2 text-sm leading-relaxed text-navy-600">
                 Responde unas preguntas sencillas y recibe una estimación del coste y del plazo en 2 minutos, sin
                 compromiso.
               </p>
@@ -207,21 +203,21 @@ export default async function ServicioPage({ params }: Params) {
         </article>
 
         {related.length > 0 && (
-          <section className="border-t border-slate-100 bg-mist py-16">
+          <section className="border-t border-line bg-mist py-16">
             <div className="container-x">
-              <h2 className="font-display text-2xl font-bold text-navy-900">Otros servicios</h2>
+              <h2 className="text-2xl font-semibold text-navy-900">Otros servicios</h2>
               <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {related.map((r) => (
                   <Link
                     key={r.id}
                     href={`/servicios/${r.slug}`}
-                    className="group rounded-2xl border border-slate-200 bg-white p-6 transition hover:-translate-y-1 hover:shadow-card"
+                    className="group border-t border-line-strong py-6 transition-colors"
                   >
                     <span className="grid h-10 w-10 place-items-center rounded-lg bg-brand-50 text-brand-600">
                       <Icon name={r.icon} size={19} />
                     </span>
-                    <h3 className="mt-4 font-display text-base font-bold text-navy-900">{r.title}</h3>
-                    <p className="mt-1.5 line-clamp-2 text-sm text-slate-600">{r.description}</p>
+                    <h3 className="mt-4 text-base font-semibold text-navy-900">{r.title}</h3>
+                    <p className="mt-1.5 line-clamp-2 text-sm text-navy-600">{r.description}</p>
                     <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 transition group-hover:gap-2.5">
                       Ver detalle <Icon name="arrow" size={14} />
                     </span>

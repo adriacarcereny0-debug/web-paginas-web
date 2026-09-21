@@ -14,42 +14,54 @@ export type TestimonialRow = {
   is_demo: number;
 };
 
+/**
+ * Citas a tamaño de lectura, separadas por filetes. Sin tarjetas, sin comillas
+ * decorativas gigantes y sin sombras.
+ */
 export function Testimonials({ copy, items }: { copy: SectionCopy; items: TestimonialRow[] }) {
   if (items.length === 0) return null;
   return (
-    <section id="testimonios" className="border-y border-slate-100 bg-mist py-20 lg:py-28">
+    <section id="testimonios" className="section-tight bg-navy-900">
       <div className="container-x">
-        <SectionHeader eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.subtitle} />
+        <SectionHeader index="05" eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.subtitle} light />
 
-        <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-14 grid gap-x-12 gap-y-10 md:grid-cols-2">
           {items.map((t, i) => (
-            <Reveal key={t.id} delay={(i % 3) * 80}>
-              <figure className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-7 transition-shadow duration-300 hover:shadow-card">
-                <Icon name="quote" size={26} className="text-brand-200" />
-                <div className="mt-3 flex gap-0.5" aria-label={`Valoración: ${t.rating} de 5`}>
+            <Reveal key={t.id} delay={(i % 2) * 70}>
+              <figure className="flex h-full flex-col border-t border-white/15 pt-6">
+                <div className="flex gap-0.5" aria-label={`Valoración: ${t.rating} de 5`}>
                   {Array.from({ length: 5 }).map((_, s) => (
                     <Icon
                       key={s}
                       name="star"
-                      size={15}
-                      className={s < t.rating ? "text-amber-400" : "text-slate-200"}
+                      size={13}
+                      className={s < t.rating ? "text-white" : "text-white/25"}
                       fill={s < t.rating ? "currentColor" : "none"}
                     />
                   ))}
                 </div>
-                <blockquote className="mt-4 flex-1 text-[15px] leading-relaxed text-slate-700">“{t.text}”</blockquote>
-                <figcaption className="mt-6 flex items-center gap-3 border-t border-slate-100 pt-5">
+                <blockquote className="mt-5 flex-1 text-[1.05rem] leading-[1.6] text-white/90">
+                  {t.text}
+                </blockquote>
+                <figcaption className="mt-6 flex items-center gap-3">
                   {t.photo ? (
-                    <Image src={t.photo} alt={t.name} width={40} height={40} className="h-10 w-10 rounded-full object-cover" loading="lazy" />
+                    <Image
+                      src={t.photo}
+                      alt={t.name}
+                      width={36}
+                      height={36}
+                      className="h-9 w-9 rounded-full object-cover"
+                      loading="lazy"
+                    />
                   ) : (
-                    <span className="grid h-10 w-10 place-items-center rounded-full bg-navy-900 text-sm font-bold text-white">
+                    <span className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-xs font-semibold text-white">
                       {t.name.replace(/\[DEMO\]\s*/i, "").charAt(0)}
                     </span>
                   )}
-                  <div>
-                    <p className="text-sm font-semibold text-navy-900">{t.name}</p>
-                    <p className="text-xs text-slate-500">{t.company}</p>
-                  </div>
+                  <p className="text-sm text-white/55">
+                    <span className="font-medium text-white">{t.name}</span>
+                    {t.company ? ` · ${t.company}` : ""}
+                  </p>
                 </figcaption>
               </figure>
             </Reveal>

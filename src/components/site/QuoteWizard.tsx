@@ -232,9 +232,9 @@ export function QuoteWizard() {
 
   if (!config.enabled) {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center">
-        <h2 className="font-display text-xl font-bold text-navy-900">El configurador está temporalmente desactivado</h2>
-        <p className="mt-2 text-sm text-slate-600">Escríbenos y preparamos tu presupuesto personalmente.</p>
+      <div className="rounded-2xl border border-line bg-white p-10 text-center">
+        <h2 className="text-xl font-semibold text-navy-900">El configurador está temporalmente desactivado</h2>
+        <p className="mt-2 text-sm text-navy-600">Escríbenos y preparamos tu presupuesto personalmente.</p>
         <Link href="/#contacto" className="btn-primary mt-6">
           Hablar con nosotros
         </Link>
@@ -262,9 +262,9 @@ export function QuoteWizard() {
     if (calculators.length === 1) return <WizardSkeleton />;
     if (calculators.length === 0) {
       return (
-        <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center">
-          <h2 className="font-display text-xl font-bold text-navy-900">El configurador está en preparación</h2>
-          <p className="mt-2 text-sm text-slate-600">Escríbenos y preparamos tu presupuesto personalmente.</p>
+        <div className="rounded-2xl border border-line bg-white p-10 text-center">
+          <h2 className="text-xl font-semibold text-navy-900">El configurador está en preparación</h2>
+          <p className="mt-2 text-sm text-navy-600">Escríbenos y preparamos tu presupuesto personalmente.</p>
           <Link href="/#contacto" className="btn-primary mt-6">
             Hablar con nosotros
           </Link>
@@ -274,10 +274,10 @@ export function QuoteWizard() {
     return (
       <div className="animate-fade-up">
         <p className="text-sm font-semibold text-navy-900">Paso 1</p>
-        <h2 className="mt-2 font-display text-2xl font-bold tracking-tight text-navy-900 sm:text-3xl">
+        <h2 className="mt-2 text-2xl font-semibold tracking-tight text-navy-900 sm:text-3xl">
           ¿Qué quieres presupuestar?
         </h2>
-        <p className="mt-2 text-[15px] text-slate-600">Elige por dónde empezamos. Después podrás pedir el otro.</p>
+        <p className="mt-2 text-[15px] text-navy-600">Elige por dónde empezamos. Después podrás pedir el otro.</p>
 
         <div className="mt-7 grid gap-3 sm:grid-cols-2">
           {calculators.map((c) => (
@@ -290,14 +290,14 @@ export function QuoteWizard() {
                 setStep(0);
                 scrollTop();
               }}
-              className="group flex items-start gap-4 rounded-2xl border border-slate-200 bg-white p-5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-400 hover:shadow-card"
+              className="group flex items-start gap-4 rounded-[8px] border border-line bg-white p-5 text-left transition-colors duration-150 hover:border-navy-900 hover:bg-paper"
             >
-              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-600 transition-colors group-hover:bg-brand-600 group-hover:text-white">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[6px] border border-line text-brand-600 transition-colors group-hover:border-navy-900 group-hover:text-navy-900">
                 <Icon name={c.icon} size={24} />
               </span>
               <span className="min-w-0">
-                <span className="block font-display text-lg font-bold text-navy-900">{c.name}</span>
-                <span className="mt-1 block text-sm leading-relaxed text-slate-600">{c.description}</span>
+                <span className="block text-lg font-semibold text-navy-900">{c.name}</span>
+                <span className="mt-1 block text-sm leading-relaxed text-navy-600">{c.description}</span>
                 <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 transition-all group-hover:gap-2.5">
                   Empezar <Icon name="arrow" size={15} />
                 </span>
@@ -318,7 +318,7 @@ export function QuoteWizard() {
           <span className="font-semibold text-navy-900">
             Paso {step + 1} de {totalSteps}
             {calculators.length > 1 && (
-              <span className="ml-2 font-normal text-slate-500">· {calculator.name}</span>
+              <span className="ml-2 font-normal text-navy-400">· {calculator.name}</span>
             )}
           </span>
           <span className="flex items-center gap-3">
@@ -331,17 +331,17 @@ export function QuoteWizard() {
                   setStep(0);
                   scrollTop();
                 }}
-                className="text-slate-500 underline-offset-2 hover:text-brand-600 hover:underline"
+                className="text-navy-400 underline-offset-2 hover:text-brand-600 hover:underline"
               >
                 Cambiar
               </button>
             )}
-            <span className="text-slate-500">{progress}% completado</span>
+            <span className="text-navy-400">{progress}% completado</span>
           </span>
         </div>
-        <div className="h-1.5 overflow-hidden rounded-full bg-slate-200">
+        <div className="h-1 overflow-hidden rounded-full bg-line">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-brand-600 to-sky-400 transition-all duration-500"
+            className="h-full rounded-full bg-navy-900 transition-all duration-500"
             style={{ width: `${Math.max(progress, 4)}%` }}
           />
         </div>
@@ -352,12 +352,12 @@ export function QuoteWizard() {
                 type="button"
                 onClick={() => i <= step && (setStep(i), scrollTop())}
                 disabled={i > step}
-                className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                className={`shrink-0 rounded-[4px] px-3 py-1.5 text-xs font-medium transition ${
                   i === step
                     ? "bg-navy-900 text-white"
                     : i < step
-                      ? "bg-brand-50 text-brand-700 hover:bg-brand-100"
-                      : "bg-slate-100 text-slate-400"
+                      ? "bg-navy-900 text-white"
+                      : "bg-mist text-navy-400"
                 }`}
               >
                 {i < step && <span className="mr-1">✓</span>}
@@ -383,10 +383,10 @@ export function QuoteWizard() {
         ) : (
           group && (
             <fieldset>
-              <legend className="font-display text-2xl font-bold tracking-tight text-navy-900 sm:text-3xl">
+              <legend className="text-2xl font-semibold tracking-tight text-navy-900 sm:text-3xl">
                 {group.title}
               </legend>
-              {group.subtitle && <p className="mt-2 text-[15px] text-slate-600">{group.subtitle}</p>}
+              {group.subtitle && <p className="mt-2 text-[15px] text-navy-600">{group.subtitle}</p>}
 
               <div className="mt-7 grid gap-3 sm:grid-cols-2">
                 {group.options.map((opt) => {
@@ -399,21 +399,21 @@ export function QuoteWizard() {
                       aria-pressed={active}
                       className={`group flex items-start gap-3 rounded-2xl border p-4 text-left transition-all duration-200 ${
                         active
-                          ? "border-brand-600 bg-brand-50/60 shadow-[0_0_0_3px_rgba(37,99,235,.12)]"
-                          : "border-slate-200 bg-white hover:border-brand-300 hover:bg-slate-50"
+                          ? "border-navy-900 bg-paper"
+                          : "border-line bg-white hover:border-brand-300 hover:bg-paper"
                       }`}
                     >
                       <span
                         className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center border transition-all ${
                           group.type === "single" ? "rounded-full" : "rounded-md"
-                        } ${active ? "border-brand-600 bg-brand-600 text-white" : "border-slate-300 bg-white text-transparent"}`}
+                        } ${active ? "border-brand-600 bg-brand-600 text-white" : "border-line-strong bg-white text-transparent"}`}
                       >
                         <Icon name="check" size={11} strokeWidth={3} />
                       </span>
                       <span className="min-w-0">
                         <span className="block text-[15px] font-semibold text-navy-900">{opt.label}</span>
                         {opt.description && (
-                          <span className="mt-0.5 block text-[13px] leading-relaxed text-slate-500">{opt.description}</span>
+                          <span className="mt-0.5 block text-[13px] leading-relaxed text-navy-400">{opt.description}</span>
                         )}
                       </span>
                     </button>
@@ -426,7 +426,7 @@ export function QuoteWizard() {
                 <p className="help mt-3">Este paso es opcional: si no necesitas nada de esto, continúa sin seleccionar.</p>
               )}
 
-              <div className="mt-8 flex items-center justify-between gap-3 border-t border-slate-100 pt-6">
+              <div className="mt-8 flex items-center justify-between gap-3 border-t border-line pt-6">
                 <button
                   type="button"
                   onClick={back}
@@ -477,7 +477,7 @@ function LeadStep({
       }}
       noValidate
     >
-      <div className="rounded-2xl border border-brand-100 bg-brand-50/50 p-5">
+      <div className="rounded-[8px] border border-line bg-paper p-5">
         <p className="flex items-center gap-2 text-sm font-semibold text-brand-800">
           <Icon name="check" size={16} strokeWidth={2.5} /> {config.leadGateTitle}
         </p>
@@ -511,12 +511,12 @@ function LeadStep({
         </div>
       </div>
 
-      <label className="mt-6 flex items-start gap-3 text-sm text-slate-600">
+      <label className="mt-6 flex items-start gap-3 text-sm text-navy-600">
         <input
           type="checkbox"
           checked={lead.consent}
           onChange={(e) => set("consent", e.target.checked)}
-          className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+          className="mt-0.5 h-4 w-4 rounded border-line-strong text-brand-600 focus:ring-brand-500"
         />
         <span>
           He leído y acepto la{" "}
@@ -530,7 +530,7 @@ function LeadStep({
 
       {formError && <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{formError}</p>}
 
-      <div className="mt-8 flex items-center justify-between gap-3 border-t border-slate-100 pt-6">
+      <div className="mt-8 flex items-center justify-between gap-3 border-t border-line pt-6">
         <button type="button" onClick={onBack} className="btn-ghost">
           <Icon name="chevron" size={16} className="rotate-180" /> Atrás
         </button>
@@ -590,12 +590,12 @@ function Input({
 function WizardSkeleton() {
   return (
     <div className="animate-pulse">
-      <div className="h-1.5 w-full rounded-full bg-slate-200" />
-      <div className="mt-8 h-8 w-2/3 rounded-lg bg-slate-200" />
-      <div className="mt-3 h-4 w-1/2 rounded-lg bg-slate-100" />
+      <div className="h-1.5 w-full rounded-full bg-line" />
+      <div className="mt-8 h-8 w-2/3 rounded-lg bg-line" />
+      <div className="mt-3 h-4 w-1/2 rounded-lg bg-mist" />
       <div className="mt-7 grid gap-3 sm:grid-cols-2">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-20 rounded-2xl bg-slate-100" />
+          <div key={i} className="h-20 rounded-2xl bg-mist" />
         ))}
       </div>
     </div>

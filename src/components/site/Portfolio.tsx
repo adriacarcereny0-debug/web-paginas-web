@@ -17,6 +17,19 @@ export type ProjectRow = {
   is_demo: number;
 };
 
+function parseTags(raw: string) {
+  try {
+    const parsed = JSON.parse(raw || "[]");
+    return Array.isArray(parsed) ? (parsed as string[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Retícula asimétrica: el primer proyecto ocupa el ancho completo y el resto se
+ * reparte en tres columnas. Las piezas no llevan marco ni sombra: manda la imagen.
+ */
 export function Portfolio({ copy, projects }: { copy: SectionCopy; projects: ProjectRow[] }) {
   const categories = useMemo(
     () => ["Todos", ...Array.from(new Set(projects.map((p) => p.category).filter(Boolean)))],
@@ -24,29 +37,29 @@ export function Portfolio({ copy, projects }: { copy: SectionCopy; projects: Pro
   );
   const [filter, setFilter] = useState("Todos");
   const visible = filter === "Todos" ? projects : projects.filter((p) => p.category === filter);
+  const [lead, ...rest] = visible;
 
   return (
-    <section id="portfolio" className="scroll-mt-24 bg-white py-20 lg:py-28">
+    <section id="portfolio" className="section scroll-mt-24 bg-white">
       <div className="container-x">
-        <SectionHeader eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.subtitle} />
+        <SectionHeader index="04" eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.subtitle} />
 
         {projects.length === 0 ? (
-          <p className="mt-12 rounded-2xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-500">
+          <p className="mt-12 border-t border-line pt-10 text-sm text-navy-400">
             Todavía no hay proyectos publicados.
           </p>
         ) : (
           <>
             {categories.length > 2 && (
-              <div className="no-scrollbar mt-10 flex justify-start gap-2 overflow-x-auto pb-1 sm:justify-center">
+              <div className="no-scrollbar mt-10 flex gap-6 overflow-x-auto border-b border-line pb-3">
                 {categories.map((c) => (
                   <button
                     key={c}
                     type="button"
                     onClick={() => setFilter(c)}
-                    className={`shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition ${
-                      filter === c
-                        ? "border-navy-900 bg-navy-900 text-white"
-                        : "border-slate-200 text-slate-600 hover:border-slate-300 hover:text-navy-900"
+                    aria-pressed={filter === c}
+                    className={`shrink-0 text-sm transition-colors ${
+                      filter === c ? "font-semibold text-navy-900" : "text-navy-400 hover:text-navy-900"
                     }`}
                   >
                     {c}
@@ -55,71 +68,21 @@ export function Portfolio({ copy, projects }: { copy: SectionCopy; projects: Pro
               </div>
             )}
 
-            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {visible.map((p, i) => {
-                let tags: string[] = [];
-                try {
-                  tags = JSON.parse(p.tags || "[]");
-                } catch {
-                  tags = [];
-                }
-                const Card = (
-                  <article className="group h-full overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all duration-300 hover:-translate-y-1.5 hover:shadow-card">
-                    <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-slate-100 via-white to-brand-50">
-                      {p.image ? (
-                        <Image
-                          src={p.image}
-                          alt={p.title}
-                          fill
-                          sizes="(max-width:768px) 100vw, 33vw"
-                          className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <PlaceholderThumb title={p.title} />
-                      )}
-                      {p.is_demo === 1 && (
-                        <span className="absolute left-3 top-3 rounded-full bg-navy-900/85 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur">
-                          Demo
-                        </span>
-                      )}
-                    </div>
-                    <div className="p-6">
-                      {p.category && (
-                        <span className="text-xs font-semibold uppercase tracking-wider text-brand-600">{p.category}</span>
-                      )}
-                      <h3 className="mt-2 font-display text-lg font-bold text-navy-900">{p.title}</h3>
-                      <p className="mt-2 text-sm leading-relaxed text-slate-600">{p.description}</p>
-                      {tags.length > 0 && (
-                        <div className="mt-4 flex flex-wrap gap-1.5">
-                          {tags.map((t) => (
-                            <span key={t} className="rounded-md bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-600">
-                              {t}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                      {p.url && (
-                        <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 transition group-hover:gap-2.5">
-                          Ver proyecto <Icon name="arrow" size={15} />
-                        </span>
-                      )}
-                    </div>
-                  </article>
-                );
-                return (
-                  <Reveal key={p.id} delay={(i % 3) * 70}>
-                    {p.url ? (
-                      <a href={p.url} target="_blank" rel="noopener noreferrer" className="block h-full">
-                        {Card}
-                      </a>
-                    ) : (
-                      Card
-                    )}
+            {lead && (
+              <Reveal>
+                <ProjectItem project={lead} featured />
+              </Reveal>
+            )}
+
+            {rest.length > 0 && (
+              <div className="grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+                {rest.map((p, i) => (
+                  <Reveal key={p.id} delay={(i % 3) * 60}>
+                    <ProjectItem project={p} />
                   </Reveal>
-                );
-              })}
-            </div>
+                ))}
+              </div>
+            )}
           </>
         )}
       </div>
@@ -127,19 +90,69 @@ export function Portfolio({ copy, projects }: { copy: SectionCopy; projects: Pro
   );
 }
 
+function ProjectItem({ project: p, featured = false }: { project: ProjectRow; featured?: boolean }) {
+  const tags = parseTags(p.tags);
+
+  const body = (
+    <article className={featured ? "group grid gap-8 py-12 lg:grid-cols-[1.35fr_1fr] lg:items-end" : "group"}>
+      <div
+        className={`relative overflow-hidden rounded-[8px] bg-mist ${featured ? "aspect-[16/9]" : "aspect-[4/3]"}`}
+      >
+        {p.image ? (
+          <Image
+            src={p.image}
+            alt={p.title}
+            fill
+            sizes={featured ? "(max-width:1024px) 100vw, 660px" : "(max-width:768px) 100vw, 33vw"}
+            className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+            loading={featured ? "eager" : "lazy"}
+          />
+        ) : (
+          <PlaceholderThumb title={p.title} />
+        )}
+        {p.is_demo === 1 && (
+          <span className="absolute left-3 top-3 rounded-[4px] bg-white/95 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-navy-600">
+            Demo
+          </span>
+        )}
+      </div>
+
+      <div className={featured ? "" : "mt-5"}>
+        {p.category && (
+          <span className="eyebrow text-navy-400">{p.category}</span>
+        )}
+        <h3
+          className={`mt-3 tracking-[-0.02em] text-navy-900 transition-colors group-hover:text-brand-700 ${
+            featured ? "text-[1.9rem] leading-tight" : "text-[1.15rem] font-semibold"
+          }`}
+        >
+          {p.title}
+        </h3>
+        <p className={`mt-3 text-[15px] leading-[1.65] text-navy-600 ${featured ? "max-w-[46ch]" : ""}`}>
+          {p.description}
+        </p>
+        {tags.length > 0 && <p className="mt-3 text-[13px] text-navy-400">{tags.join(" · ")}</p>}
+        {p.url && (
+          <span className="mt-4 inline-flex items-center gap-1.5 text-sm text-brand-600 transition-all group-hover:gap-2.5">
+            Ver proyecto <Icon name="arrow" size={14} />
+          </span>
+        )}
+      </div>
+    </article>
+  );
+
+  if (!p.url) return body;
+  return (
+    <a href={p.url} target="_blank" rel="noopener noreferrer" className="block">
+      {body}
+    </a>
+  );
+}
+
 function PlaceholderThumb({ title }: { title: string }) {
   return (
-    <div className="absolute inset-0 flex flex-col justify-between p-5">
-      <div className="flex gap-1.5">
-        <span className="h-2 w-2 rounded-full bg-slate-300" />
-        <span className="h-2 w-2 rounded-full bg-slate-300" />
-        <span className="h-2 w-2 rounded-full bg-slate-300" />
-      </div>
-      <div className="space-y-2">
-        <div className="h-2.5 w-2/3 rounded-full bg-navy-900/15" />
-        <div className="h-2 w-1/2 rounded-full bg-navy-900/10" />
-        <div className="h-6 w-20 rounded-full bg-brand-500/25" />
-      </div>
+    <div className="absolute inset-0 grid place-items-center">
+      <span className="text-[13px] text-navy-400">Sin imagen</span>
       <span className="sr-only">{title}</span>
     </div>
   );

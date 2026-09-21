@@ -3,62 +3,60 @@ import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
 import { Reveal } from "@/components/ui/Reveal";
 import type { Hero as HeroContent } from "@/lib/content";
-import { HeroMockup } from "./HeroMockup";
 
+/**
+ * Portada tipográfica: el titular ocupa el ancho de la retícula y el resto se
+ * organiza en dos columnas asimétricas. Sin degradados, sin manchas de color
+ * difuminadas y sin maquetas falsas con cifras inventadas.
+ */
 export function Hero({ content }: { content: HeroContent }) {
   return (
-    <section id="inicio" className="relative overflow-hidden bg-white pt-[72px]">
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 grid-bg mask-fade-b opacity-70" />
-        <div className="absolute -left-40 -top-32 h-[420px] w-[420px] rounded-full bg-brand-400/20 blur-[110px]" />
-        <div className="absolute -right-32 top-24 h-[380px] w-[380px] rounded-full bg-sky-300/25 blur-[110px]" />
-      </div>
+    <section id="inicio" className="bg-white pt-[var(--header-h)]">
+      <div className="container-x pb-16 pt-14 lg:pb-20 lg:pt-24">
+        {content.badge && (
+          <Reveal>
+            <p className="flex items-center gap-2.5 text-[13px] font-medium text-navy-600">
+              <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-brand-600" />
+              {content.badge}
+            </p>
+          </Reveal>
+        )}
 
-      <div className="container-x relative grid items-center gap-14 py-16 lg:grid-cols-[1.05fr_1fr] lg:gap-10 lg:py-24">
-        <div>
-          {content.badge && (
-            <Reveal>
-              <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3.5 py-1.5 text-[13px] font-medium text-navy-700 shadow-soft backdrop-blur">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-                </span>
-                {content.badge}
-              </span>
+        <Reveal delay={60}>
+          <h1 className="mt-7 max-w-[15ch] text-[2.7rem] leading-[1.04] tracking-[-0.035em] text-navy-900 sm:text-[4rem] lg:text-[5rem]">
+            {content.title}{" "}
+            <span className="text-brand-600">{content.highlight}</span>
+          </h1>
+        </Reveal>
+
+        <div className="mt-12 grid gap-10 border-t border-line pt-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16">
+          <div>
+            <Reveal delay={120}>
+              <p className="max-w-[52ch] text-[17px] leading-[1.65] text-navy-600">{content.subtitle}</p>
             </Reveal>
-          )}
 
-          <Reveal delay={60}>
-            <h1 className="mt-6 font-display text-[2.6rem] font-extrabold leading-[1.06] tracking-[-0.03em] text-navy-900 sm:text-6xl lg:text-[4.1rem]">
-              {content.title}{" "}
-              <span className="text-gradient">{content.highlight}</span>
-            </h1>
-          </Reveal>
-
-          <Reveal delay={120}>
-            <p className="mt-6 max-w-xl text-[17px] leading-relaxed text-slate-600 sm:text-lg">{content.subtitle}</p>
-          </Reveal>
-
-          <Reveal delay={180}>
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-              <Link href="/presupuesto" className="btn-primary group">
-                {content.primaryCta}
-                <Icon name="arrow" size={18} className="transition-transform group-hover:translate-x-1" />
-              </Link>
-              <Link href="/#proceso" className="btn-secondary">
-                {content.secondaryCta}
-              </Link>
-            </div>
-          </Reveal>
+            <Reveal delay={180}>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link href="/presupuesto" className="btn-primary group">
+                  {content.primaryCta}
+                  <Icon name="arrow" size={17} className="transition-transform group-hover:translate-x-0.5" />
+                </Link>
+                <Link href="/#proceso" className="btn-secondary">
+                  {content.secondaryCta}
+                </Link>
+              </div>
+            </Reveal>
+          </div>
 
           {content.bullets?.length > 0 && (
-            <Reveal delay={240}>
-              <ul className="mt-9 flex flex-wrap gap-x-6 gap-y-3">
+            <Reveal delay={220}>
+              <ul className="lg:border-l lg:border-line lg:pl-16">
                 {content.bullets.map((b) => (
-                  <li key={b} className="flex items-center gap-2 text-sm font-medium text-slate-600">
-                    <span className="grid h-5 w-5 place-items-center rounded-full bg-brand-50 text-brand-600">
-                      <Icon name="check" size={12} strokeWidth={2.4} />
-                    </span>
+                  <li
+                    key={b}
+                    className="flex items-start gap-3 border-b border-line py-3 text-[15px] text-navy-700 last:border-b-0"
+                  >
+                    <Icon name="check" size={15} strokeWidth={2.2} className="mt-1 shrink-0 text-brand-600" />
                     {b}
                   </li>
                 ))}
@@ -66,24 +64,24 @@ export function Hero({ content }: { content: HeroContent }) {
             </Reveal>
           )}
         </div>
+      </div>
 
-        <Reveal delay={140} className="relative">
-          {content.image ? (
-            <div className="relative mx-auto aspect-[4/3] w-full max-w-[560px] overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-card">
+      {content.image && (
+        <div className="container-x pb-4">
+          <Reveal>
+            <div className="relative aspect-[16/7] w-full overflow-hidden rounded-[8px] bg-mist">
               <Image
                 src={content.image}
                 alt=""
                 fill
                 priority
-                sizes="(max-width: 1024px) 100vw, 560px"
+                sizes="(max-width: 1160px) 100vw, 1080px"
                 className="object-cover"
               />
             </div>
-          ) : (
-            <HeroMockup />
-          )}
-        </Reveal>
-      </div>
+          </Reveal>
+        </div>
+      )}
     </section>
   );
 }

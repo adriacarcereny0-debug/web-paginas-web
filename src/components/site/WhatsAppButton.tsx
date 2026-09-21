@@ -22,7 +22,7 @@ export function WhatsAppButton({ phone, brandName }: { phone: string; brandName:
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Contactar por WhatsApp"
-      className={`fixed bottom-5 right-5 z-40 print:hidden grid h-14 w-14 place-items-center rounded-full bg-emerald-500 text-white shadow-[0_12px_30px_-10px_rgba(16,185,129,.8)] transition-all duration-300 hover:bg-emerald-600 ${
+      className={`fixed bottom-5 right-5 z-40 print:hidden grid h-14 w-14 place-items-center rounded-full bg-emerald-600 text-white shadow-card transition-colors duration-200 hover:bg-emerald-700 ${
         show ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0"
       }`}
     >

@@ -41,66 +41,65 @@ export function QuoteResult({
 
   return (
     <div className="animate-fade-up">
-      <div className="rounded-3xl border border-slate-200 bg-white shadow-card print:border-0 print:shadow-none">
-        <div className="relative overflow-hidden rounded-t-3xl bg-gradient-to-br from-brand-700 via-brand-600 to-navy-900 px-7 py-9 text-white sm:px-10">
-          <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/15 blur-3xl" />
-          <div className="relative flex flex-wrap items-start justify-between gap-4">
+      <div className="rounded-[8px] border border-line bg-white print:border-0">
+        <div className="border-b border-line bg-navy-900 px-7 py-9 text-white sm:px-10">
+          <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-100">Tu proyecto</p>
-              <h2 className="mt-2 font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+              <p className="eyebrow text-white/45">Tu proyecto</p>
+              <h2 className="mt-3 text-[1.9rem] leading-tight tracking-[-0.025em] sm:text-[2.35rem]">
                 {result.projectType || "Presupuesto personalizado"}
               </h2>
-              <p className="mt-2 text-sm text-brand-100">Referencia {result.publicId}</p>
+              <p className="mt-2 text-sm text-white/55">Referencia {result.publicId}</p>
             </div>
-            <span className="rounded-full border border-white/25 px-3 py-1.5 text-xs font-semibold">
+            <span className="rounded-[4px] border border-white/25 px-2.5 py-1 text-xs font-medium text-white/70">
               Estimación orientativa
             </span>
           </div>
 
-          <div className="relative mt-8 grid gap-4 sm:grid-cols-3">
-            <div className="rounded-2xl bg-white/10 p-5 backdrop-blur-sm sm:col-span-2">
-              <p className="text-xs font-medium uppercase tracking-wider text-brand-100">Presupuesto estimado</p>
-              <p className="mt-1.5 font-display text-3xl font-extrabold tracking-tight sm:text-[2.6rem]">
+          <div className="mt-10 grid gap-8 border-t border-white/15 pt-8 sm:grid-cols-3">
+            <div className="sm:col-span-2">
+              <p className="eyebrow text-white/45">Presupuesto estimado</p>
+              <p className="tnum mt-3 text-[2.1rem] leading-none tracking-[-0.035em] sm:text-[2.8rem]">
                 {result.priceMin === result.priceMax
                   ? formatMoney(result.priceMax, result.currency)
-                  : `${formatMoney(result.priceMin, result.currency)} - ${formatMoney(result.priceMax, result.currency)}`}
+                  : `${formatMoney(result.priceMin, result.currency)} — ${formatMoney(result.priceMax, result.currency)}`}
               </p>
               {result.monthly > 0 && (
-                <p className="mt-1 text-sm text-brand-100">
+                <p className="mt-2.5 text-sm text-white/60">
                   + {formatMoney(result.monthly, result.currency)}/mes en servicios recurrentes
                 </p>
               )}
               {result.discount && (
-                <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-400/20 px-2.5 py-1 text-xs font-semibold text-emerald-100">
+                <p className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-white/80">
                   <Icon name="check" size={12} strokeWidth={3} /> {result.discount.label} (-{result.discount.percent}%)
                 </p>
               )}
             </div>
-            <div className="rounded-2xl bg-white/10 p-5 backdrop-blur-sm">
-              <p className="text-xs font-medium uppercase tracking-wider text-brand-100">Tiempo estimado</p>
-              <p className="mt-1.5 font-display text-2xl font-extrabold tracking-tight">
+            <div className="sm:border-l sm:border-white/15 sm:pl-8">
+              <p className="eyebrow text-white/45">Tiempo estimado</p>
+              <p className="tnum mt-3 text-[1.6rem] leading-none tracking-[-0.03em]">
                 {result.daysMin}-{result.daysMax} días
               </p>
-              <p className="mt-1 text-xs text-brand-100">laborables desde el inicio</p>
+              <p className="mt-2.5 text-xs text-white/55">laborables desde el inicio</p>
             </div>
           </div>
         </div>
 
         <div className="px-7 py-8 sm:px-10">
-          <h3 className="font-display text-lg font-bold text-navy-900">Resumen de tu configuración</h3>
-          <dl className="mt-5 divide-y divide-slate-100">
+          <h3 className="text-lg font-semibold text-navy-900">Resumen de tu configuración</h3>
+          <dl className="mt-5 divide-y divide-line">
             {result.summary.map((block) => (
               <div key={block.groupKey} className="grid gap-1.5 py-4 sm:grid-cols-[240px_1fr] sm:gap-6">
-                <dt className="text-sm font-semibold text-slate-500">{block.group}</dt>
+                <dt className="text-sm font-semibold text-navy-400">{block.group}</dt>
                 <dd className="flex flex-wrap gap-1.5">
                   {block.items.map((item) => (
                     <span
                       key={item.label}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1.5 text-[13px] font-medium text-navy-800"
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-mist px-2.5 py-1.5 text-[13px] font-medium text-navy-800"
                     >
                       <Icon name="check" size={12} strokeWidth={3} className="text-brand-600" />
                       {item.label}
-                      {item.priceType === "monthly" && <span className="text-[11px] text-slate-500">/mes</span>}
+                      {item.priceType === "monthly" && <span className="text-[11px] text-navy-400">/mes</span>}
                     </span>
                   ))}
                 </dd>
@@ -109,7 +108,7 @@ export function QuoteResult({
           </dl>
 
           {note && (
-            <p className="mt-6 rounded-xl border border-slate-200 bg-mist p-4 text-[13px] leading-relaxed text-slate-600">
+            <p className="mt-6 rounded-xl border border-line bg-mist p-4 text-[13px] leading-relaxed text-navy-600">
               <Icon name="help" size={15} className="mr-1.5 inline align-[-2px] text-brand-600" />
               {note}
             </p>
@@ -120,7 +119,7 @@ export function QuoteResult({
               <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-emerald-100 text-emerald-700">
                 <Icon name="check" size={24} strokeWidth={2.4} />
               </span>
-              <h4 className="mt-4 font-display text-lg font-bold text-emerald-900">Presupuesto solicitado</h4>
+              <h4 className="mt-4 text-lg font-semibold text-emerald-900">Presupuesto solicitado</h4>
               <p className="mx-auto mt-2 max-w-md text-sm text-emerald-800">
                 Hemos recibido tu solicitud con la referencia <strong>{result.publicId}</strong>. Te contactaremos en menos
                 de 24 horas laborables para concretar los detalles.
@@ -161,7 +160,7 @@ export function QuoteResult({
             href={`/presupuesto/${result.publicId}`}
             target="_blank"
             rel="noopener"
-            className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-navy-900 print:hidden"
+            className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-navy-400 transition hover:text-navy-900 print:hidden"
           >
             <Icon name="download" size={16} /> Descargar el presupuesto en PDF
           </a>

@@ -4,94 +4,91 @@
 
 @layer base {
   :root {
-    --radius: 14px;
+    --radius: 8px;
+    --header-h: 68px;
   }
   html {
     scroll-behavior: smooth;
-    scroll-padding-top: 88px;
+    scroll-padding-top: 92px;
     -webkit-text-size-adjust: 100%;
   }
   body {
-    @apply bg-white text-slate-700 antialiased;
+    @apply bg-white text-navy-600 antialiased;
     font-feature-settings: "cv11", "ss01";
     text-rendering: optimizeLegibility;
   }
   h1, h2, h3, h4 {
     @apply font-display text-navy-900;
+    font-weight: 600;
+    letter-spacing: -0.02em;
     text-wrap: balance;
   }
   p { text-wrap: pretty; }
-  ::selection { @apply bg-brand-600 text-white; }
+  ::selection { @apply bg-navy-900 text-white; }
   :focus-visible {
     outline: 2px solid theme("colors.brand.600");
     outline-offset: 2px;
-    border-radius: 6px;
+    border-radius: 4px;
   }
   input, textarea, select { color-scheme: light; }
+  /* Las cifras se alinean en columna: precios, plazos y valoraciones. */
+  .tnum, table td, table th { font-variant-numeric: tabular-nums; }
 }
 
 @layer components {
-  .container-x { @apply mx-auto w-full max-w-[1200px] px-5 sm:px-6 lg:px-8; }
+  .container-x { @apply mx-auto w-full max-w-[1160px] px-5 sm:px-6 lg:px-10; }
+
+  /* Ritmo vertical con jerarquía: no todas las secciones pesan lo mismo. */
+  .section { @apply py-20 lg:py-28; }
+  .section-tight { @apply py-14 lg:py-20; }
 
   .btn {
-    @apply inline-flex select-none items-center justify-center gap-2 rounded-full px-5 py-3 text-[15px] font-semibold
-           transition-all duration-200 disabled:pointer-events-none disabled:opacity-55;
+    @apply inline-flex select-none items-center justify-center gap-2 rounded-[6px] px-5 py-3 text-[15px] font-medium
+           transition-colors duration-150 disabled:pointer-events-none disabled:opacity-55;
   }
-  .btn-primary {
-    @apply btn bg-brand-600 text-white shadow-[0_10px_30px_-12px_rgba(37,99,235,.75)]
-           hover:bg-brand-700 hover:shadow-lift active:translate-y-px;
-  }
-  .btn-secondary {
-    @apply btn border border-slate-200 bg-white text-navy-800 hover:border-brand-300 hover:bg-brand-50 active:translate-y-px;
-  }
-  .btn-ghost { @apply btn text-navy-700 hover:bg-slate-100; }
-  .btn-dark { @apply btn bg-navy-900 text-white hover:bg-navy-800; }
+  .btn-primary { @apply btn bg-brand-600 text-white hover:bg-brand-700; }
+  .btn-secondary { @apply btn border border-line-strong bg-white text-navy-900 hover:bg-mist; }
+  .btn-ghost { @apply btn text-navy-700 hover:bg-mist; }
+  .btn-dark { @apply btn bg-navy-900 text-white hover:bg-navy-700; }
   .btn-sm { @apply px-4 py-2 text-sm; }
 
+  /* Antes era una píldora de color; ahora es una etiqueta tipográfica. */
   .eyebrow {
-    @apply inline-flex items-center gap-2 rounded-full border border-brand-100 bg-brand-50 px-3 py-1
-           text-xs font-semibold uppercase tracking-[0.14em] text-brand-700;
+    @apply inline-block text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-600;
   }
+  .section-index {
+    @apply font-display text-[11px] font-semibold tabular-nums tracking-[0.18em] text-navy-400;
+  }
+  .rule { @apply border-t border-line; }
 
-  .card { @apply rounded-2xl border border-slate-200/80 bg-white shadow-soft; }
+  .card { @apply rounded-[8px] border border-line bg-white; }
 
   .field {
-    @apply w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-[15px] text-navy-900
-           placeholder:text-slate-400 transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10;
+    @apply w-full rounded-[6px] border border-line-strong bg-white px-4 py-3 text-[15px] text-navy-900
+           placeholder:text-navy-400 transition focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15;
   }
   .label { @apply mb-1.5 block text-sm font-medium text-navy-800; }
-  .help { @apply mt-1 text-xs text-slate-500; }
-  .error-text { @apply mt-1 text-xs font-medium text-red-600; }
+  .help { @apply mt-1 text-xs text-navy-400; }
+  .error-text { @apply mt-1 text-xs font-medium text-red-700; }
 
-  .badge { @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold; }
+  .badge { @apply inline-flex items-center gap-1.5 rounded-[4px] px-2 py-1 text-xs font-semibold; }
 
   .link-underline {
     @apply relative after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px after:origin-right after:scale-x-0
            after:bg-current after:transition-transform hover:after:origin-left hover:after:scale-x-100;
   }
 
-  .prose-legal h2 { @apply mt-8 text-2xl font-bold text-navy-900 first:mt-0; }
+  .prose-legal h2 { @apply mt-10 text-2xl font-semibold text-navy-900 first:mt-0; }
   .prose-legal h3 { @apply mt-6 text-lg font-semibold text-navy-900; }
-  .prose-legal p { @apply mt-4 leading-relaxed text-slate-600; }
-  .prose-legal ul { @apply mt-4 list-disc space-y-2 pl-5 text-slate-600; }
-  .prose-legal blockquote { @apply mt-6 rounded-xl border-l-4 border-brand-500 bg-brand-50/60 p-4 text-sm text-navy-700; }
+  .prose-legal p { @apply mt-4 leading-relaxed text-navy-600; }
+  .prose-legal ul { @apply mt-4 list-disc space-y-2 pl-5 text-navy-600; }
+  .prose-legal blockquote { @apply mt-6 border-l-2 border-brand-600 py-1 pl-4 text-sm text-navy-700; }
 }
 
 @layer utilities {
-  .reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1); }
+  /* Animación única del sitio: aparecer. Discreta, corta y una sola vez. */
+  .reveal { opacity: 0; transform: translateY(10px); transition: opacity .5s ease-out, transform .5s cubic-bezier(.22,1,.36,1); }
   .reveal.is-visible { opacity: 1; transform: none; }
-  .grid-bg {
-    background-image: linear-gradient(rgba(15,23,42,.045) 1px, transparent 1px),
-                      linear-gradient(90deg, rgba(15,23,42,.045) 1px, transparent 1px);
-    background-size: 56px 56px;
-  }
-  .mask-fade-b { mask-image: linear-gradient(to bottom, black 55%, transparent 100%); }
-  .text-gradient {
-    background: linear-gradient(100deg, #1d4ed8 0%, #3b82f6 45%, #0ea5e9 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { scrollbar-width: none; }
 }

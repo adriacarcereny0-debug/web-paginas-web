@@ -1,11 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Manrope } from "next/font/google";
+import { Inter } from "next/font/google";
 import { getContent } from "@/lib/content";
 import { metaDescription, siteOrigin } from "@/lib/seo";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
-const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope", display: "swap" });
 
 export const dynamic = "force-dynamic";
 
@@ -81,7 +80,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es-ES" className={`${inter.variable} ${manrope.variable}`}>
+    <html lang="es-ES" className={inter.variable}>
       <body className="min-h-dvh bg-white font-sans">{children}</body>
     </html>
   );

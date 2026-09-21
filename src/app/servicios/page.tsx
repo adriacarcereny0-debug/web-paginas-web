@@ -56,25 +56,25 @@ export default async function ServiciosPage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: schema }} />
       <Header brandName={site.brandName} initials={site.brandInitials} logo={site.logo} logoLayout={site.logoLayout} />
-      <main className="bg-white pt-[72px]">
-        <div className="border-b border-slate-100 bg-mist">
+      <main className="bg-white pt-[var(--header-h)]">
+        <div className="border-b border-line bg-mist">
           <div className="container-x py-14 lg:py-20">
-            <nav aria-label="Ruta de navegación" className="text-sm text-slate-500">
+            <nav aria-label="Ruta de navegación" className="text-sm text-navy-400">
               <Link href="/" className="hover:text-brand-600">
                 Inicio
               </Link>
-              <span className="mx-2 text-slate-300">/</span>
+              <span className="mx-2 text-line-strong">/</span>
               <span className="text-navy-900">Servicios</span>
             </nav>
-            <h1 className="mt-5 max-w-3xl font-display text-4xl font-extrabold tracking-[-0.02em] text-navy-900 sm:text-5xl sm:leading-[1.08]">
+            <h1 className="mt-5 max-w-3xl text-4xl font-semibold tracking-[-0.02em] text-navy-900 sm:text-5xl sm:leading-[1.08]">
               {seo.servicesIndexTitle}
             </h1>
-            <p className="mt-5 max-w-2xl text-[17px] leading-relaxed text-slate-600">{seo.servicesIndexDescription}</p>
+            <p className="mt-5 max-w-2xl text-[17px] leading-relaxed text-navy-600">{seo.servicesIndexDescription}</p>
           </div>
         </div>
 
         <div className="container-x py-16 lg:py-20">
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-x-10 gap-y-2 md:grid-cols-2 lg:grid-cols-3">
             {services.map((service) => {
               let features: string[] = [];
               try {
@@ -83,31 +83,29 @@ export default async function ServiciosPage() {
                 features = [];
               }
               const inner = (
-                <article className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-7 transition-all duration-300 hover:-translate-y-1 hover:border-brand-200 hover:shadow-card">
-                  <span className="grid h-12 w-12 place-items-center rounded-xl bg-navy-900 text-white">
-                    <Icon name={service.icon} size={22} />
-                  </span>
-                  <h2 className="mt-5 font-display text-xl font-bold text-navy-900">{service.title}</h2>
-                  <p className="mt-2.5 flex-1 text-[15px] leading-relaxed text-slate-600">{service.description}</p>
+                <article className="group flex h-full flex-col border-t border-line-strong py-7">
+                  <Icon name={service.icon} size={18} className="text-brand-600" />
+                  <h2 className="mt-5 text-[1.3rem] leading-tight tracking-[-0.02em] text-navy-900 transition-colors group-hover:text-brand-700">
+                    {service.title}
+                  </h2>
+                  <p className="mt-2.5 flex-1 text-[15px] leading-relaxed text-navy-600">{service.description}</p>
                   {features.length > 0 && (
                     <ul className="mt-5 space-y-2">
                       {features.slice(0, 4).map((f) => (
-                        <li key={f} className="flex items-start gap-2 text-sm text-slate-600">
-                          <span className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-600">
-                            <Icon name="check" size={10} strokeWidth={3} />
-                          </span>
+                        <li key={f} className="flex items-start gap-2 text-sm text-navy-600">
+                          <Icon name="check" size={12} strokeWidth={2.5} className="mt-1 shrink-0 text-brand-600" />
                           {f}
                         </li>
                       ))}
                     </ul>
                   )}
-                  <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-5">
-                    <span className="text-sm font-semibold text-navy-900">
+                  <div className="mt-6 flex items-center justify-between gap-4">
+                    <span className="tnum text-sm font-semibold text-navy-900">
                       {service.price_label || (service.price_from > 0 ? `Desde ${formatMoney(service.price_from)}` : "Consultar")}
                     </span>
                     {service.slug && (
-                      <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600">
-                        Ver detalle <Icon name="arrow" size={15} />
+                      <span className="inline-flex items-center gap-1.5 text-sm text-brand-600 transition-all group-hover:gap-2.5">
+                        Ver detalle <Icon name="arrow" size={14} />
                       </span>
                     )}
                   </div>

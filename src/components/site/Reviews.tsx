@@ -34,90 +34,88 @@ export function Reviews({ copy, reviews }: { copy: ReviewsSection; reviews: Revi
   const shown = reviews.slice(0, visible);
 
   return (
-    <section id="resenas" className="scroll-mt-24 bg-white py-20 lg:py-28">
+    <section id="resenas" className="section scroll-mt-24 bg-white">
       <div className="container-x">
-        <SectionHeader eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.subtitle} />
+        <SectionHeader index="06" eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.subtitle} />
 
         {copy.showSummary && (
           <Reveal delay={80}>
-            <div className="mx-auto mt-12 grid max-w-4xl gap-6 rounded-2xl border border-slate-200 bg-mist p-6 sm:grid-cols-[auto_1fr_auto] sm:items-center sm:gap-10 sm:p-8">
-              <div className="text-center sm:text-left">
-                <p className="font-display text-5xl font-extrabold tracking-tight text-navy-900">
+            <div className="mt-12 grid gap-8 border-y border-line py-8 sm:grid-cols-[auto_1fr] sm:gap-14 lg:grid-cols-[auto_1fr_auto]">
+              <div>
+                <p className="tnum text-[3.25rem] leading-none tracking-[-0.04em] text-navy-900">
                   {average.toFixed(1).replace(".", ",")}
                 </p>
-                <Stars value={average} className="mt-2 justify-center sm:justify-start" />
-                <p className="mt-1.5 text-sm text-slate-500">
+                <Stars value={average} className="mt-3" />
+                <p className="mt-2 text-sm text-navy-400">
                   {total} {total === 1 ? "reseña" : "reseñas"}
                 </p>
               </div>
 
-              <ul className="space-y-1.5">
+              <ul className="max-w-sm space-y-2 self-center">
                 {distribution.map((d) => (
                   <li key={d.star} className="flex items-center gap-3">
-                    <span className="w-8 shrink-0 text-xs font-medium text-slate-500">{d.star} ★</span>
-                    <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200">
+                    <span className="tnum w-6 shrink-0 text-xs text-navy-400">{d.star}</span>
+                    <span className="h-px flex-1 bg-line">
                       <span
-                        className="block h-full rounded-full bg-amber-400"
+                        className="block h-px bg-navy-900"
                         style={{ width: `${total ? (d.count / total) * 100 : 0}%` }}
                       />
                     </span>
-                    <span className="w-6 shrink-0 text-right text-xs text-slate-400">{d.count}</span>
+                    <span className="tnum w-6 shrink-0 text-right text-xs text-navy-400">{d.count}</span>
                   </li>
                 ))}
               </ul>
 
               {copy.highlightValue && (
-                <div className="border-slate-200 text-center sm:border-l sm:pl-10 sm:text-left">
-                  <p className="font-display text-4xl font-extrabold tracking-tight text-brand-600">
+                <div className="self-center lg:border-l lg:border-line lg:pl-14">
+                  <p className="tnum text-[2rem] leading-none tracking-[-0.03em] text-navy-900">
                     {copy.highlightValue}
                   </p>
-                  <p className="mt-1 max-w-[9rem] text-sm text-slate-600">{copy.highlightLabel}</p>
+                  <p className="mt-2 max-w-[14rem] text-sm text-navy-600">{copy.highlightLabel}</p>
                 </div>
               )}
             </div>
           </Reveal>
         )}
 
-        <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-2 grid gap-x-10 md:grid-cols-2 lg:grid-cols-3">
           {shown.map((review, i) => (
-            <Reveal key={review.id} delay={(i % 3) * 70}>
-              <article className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-card">
+            <Reveal key={review.id} delay={(i % 3) * 60}>
+              <article className="flex h-full flex-col border-b border-line py-7">
                 <div className="flex items-start gap-3">
                   {review.avatar ? (
                     <Image
                       src={review.avatar}
                       alt={review.author}
-                      width={44}
-                      height={44}
-                      className="h-11 w-11 rounded-full object-cover"
+                      width={36}
+                      height={36}
+                      className="h-9 w-9 rounded-full object-cover"
                       loading="lazy"
                     />
                   ) : (
-                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand-50 font-display text-base font-bold text-brand-700">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-mist text-xs font-semibold text-navy-700">
                       {review.author.replace(/\[DEMO\]\s*/i, "").charAt(0)}
                     </span>
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[15px] font-semibold text-navy-900">{review.author}</p>
-                    <p className="truncate text-xs text-slate-500">
+                    <p className="truncate text-[15px] font-medium text-navy-900">{review.author}</p>
+                    <p className="truncate text-xs text-navy-400">
                       {[review.service, review.location].filter(Boolean).join(" · ")}
                     </p>
                   </div>
                   {review.is_demo === 1 && (
-                    <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-500">
-                      Demo
-                    </span>
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-navy-400">Demo</span>
                   )}
                 </div>
 
                 <Stars value={review.rating} className="mt-4" />
-                <p className="mt-3 flex-1 text-[15px] leading-relaxed text-slate-700">{review.text}</p>
+                <p className="mt-3 flex-1 text-[15px] leading-[1.65] text-navy-700">{review.text}</p>
 
-                <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4 text-xs text-slate-400">
+                <div className="mt-5 flex items-center justify-between text-xs text-navy-400">
                   <span>{review.reviewed_on}</span>
                   {review.source && (
-                    <span className="inline-flex items-center gap-1.5 font-medium text-slate-500">
-                      <Icon name="check" size={12} strokeWidth={3} className="text-emerald-500" />
+                    <span className="inline-flex items-center gap-1.5">
+                      <Icon name="check" size={11} strokeWidth={3} className="text-brand-600" />
                       {review.source}
                     </span>
                   )}
@@ -128,10 +126,10 @@ export function Reviews({ copy, reviews }: { copy: ReviewsSection; reviews: Revi
         </div>
 
         {visible < total && (
-          <div className="mt-10 flex justify-center">
+          <div className="mt-10">
             <button type="button" onClick={() => setVisible((v) => v + PAGE)} className="btn-secondary">
               Ver más reseñas
-              <span className="text-slate-400">({total - visible})</span>
+              <span className="tnum text-navy-400">({total - visible})</span>
             </button>
           </div>
         )}
@@ -147,8 +145,8 @@ function Stars({ value, className = "" }: { value: number; className?: string })
         <Icon
           key={i}
           name="star"
-          size={15}
-          className={i < Math.round(value) ? "text-amber-400" : "text-slate-200"}
+          size={14}
+          className={i < Math.round(value) ? "text-navy-900" : "text-line-strong"}
           fill={i < Math.round(value) ? "currentColor" : "none"}
         />
       ))}

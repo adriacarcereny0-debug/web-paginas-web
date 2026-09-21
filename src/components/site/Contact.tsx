@@ -50,13 +50,13 @@ export function Contact({ copy, site, services }: { copy: SectionCopy; site: Sit
   }
 
   return (
-    <section id="contacto" className="scroll-mt-24 border-t border-slate-100 bg-mist py-20 lg:py-28">
+    <section id="contacto" className="section scroll-mt-24 bg-white">
       <div className="container-x grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
         <div>
-          <SectionHeader eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.subtitle} align="left" />
+          <SectionHeader index="08" eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.subtitle} />
 
           <Reveal delay={140}>
-            <ul className="mt-9 space-y-3">
+            <ul className="mt-10 border-t border-line-strong">
               {site.email && (
                 <ContactItem icon="mail" label="Email" value={site.email} href={`mailto:${site.email}`} />
               )}
@@ -79,14 +79,14 @@ export function Contact({ copy, site, services }: { copy: SectionCopy; site: Sit
         </div>
 
         <Reveal delay={100}>
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-soft sm:p-8">
+          <div className="rounded-[8px] border border-line bg-paper p-6 sm:p-8">
             {state === "success" ? (
               <div className="py-10 text-center">
-                <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-50 text-emerald-600">
-                  <Icon name="check" size={26} strokeWidth={2.4} />
+                <span className="mx-auto grid h-12 w-12 place-items-center rounded-full border border-emerald-600 text-emerald-700">
+                  <Icon name="check" size={22} strokeWidth={2.2} />
                 </span>
-                <h3 className="mt-5 font-display text-xl font-bold text-navy-900">Mensaje enviado</h3>
-                <p className="mx-auto mt-2 max-w-sm text-sm text-slate-600">
+                <h3 className="mt-5 text-xl font-semibold text-navy-900">Mensaje enviado</h3>
+                <p className="mx-auto mt-2 max-w-sm text-sm text-navy-600">
                   Gracias por escribirnos. Te responderemos en menos de 24 horas laborables.
                 </p>
                 <button type="button" onClick={() => setState("idle")} className="btn-secondary btn-sm mt-6">
@@ -132,8 +132,8 @@ export function Contact({ copy, site, services }: { copy: SectionCopy; site: Sit
                   {errors.message && <p className="error-text">{errors.message}</p>}
                 </div>
 
-                <label className="mt-5 flex items-start gap-3 text-sm text-slate-600">
-                  <input type="checkbox" name="consent" required className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500" />
+                <label className="mt-5 flex items-start gap-3 text-sm text-navy-600">
+                  <input type="checkbox" name="consent" required className="mt-0.5 h-4 w-4 rounded border-line-strong text-brand-600 focus:ring-brand-500" />
                   <span>
                     He leído y acepto la{" "}
                     <a href="/legal/privacidad" className="font-medium text-brand-600 underline underline-offset-2">
@@ -183,13 +183,11 @@ function ContactItem({
   external?: boolean;
 }) {
   const body = (
-    <span className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 transition hover:border-brand-200 hover:shadow-soft">
-      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-600">
-        <Icon name={icon} size={19} />
-      </span>
+    <span className="flex items-center gap-4 border-b border-line py-4 transition-colors hover:bg-paper">
+      <Icon name={icon} size={17} className="shrink-0 text-brand-600" />
       <span>
-        <span className="block text-xs font-medium uppercase tracking-wider text-slate-400">{label}</span>
-        <span className="block text-[15px] font-semibold text-navy-900">{value}</span>
+        <span className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-navy-400">{label}</span>
+        <span className="mt-0.5 block text-[15px] font-medium text-navy-900">{value}</span>
       </span>
     </span>
   );
